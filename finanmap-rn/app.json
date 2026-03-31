@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "FinanMap Pro",
+    "slug": "finanmap-pro",
+    "version": "2.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#7C3AED"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "pro.finanmap.app",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#7C3AED"
+      },
+      "package": "pro.finanmap.app",
+      "versionCode": 1,
+      "permissions": ["INTERNET", "RECEIVE_BOOT_COMPLETED", "VIBRATE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-notifications",
+        { "icon": "./assets/notification-icon.png", "color": "#7C3AED" }
+      ]
+    ],
+    "scheme": "finanmap",
+    "extra": {
+      "eas": { "projectId": "your-eas-project-id" }
+    }
+  }
+}

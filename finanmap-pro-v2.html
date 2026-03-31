@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanMap Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --p:#7C3AED;--p2:#6D28D9;--p3:#5B21B6;--pl:#EDE9FE;--pm:#DDD6FE;
+  --g:#059669;--gl:#D1FAE5;
+  --a:#D97706;--al:#FEF3C7;
+  --r:#DC2626;--rl:#FEE2E2;
+  --b:#2563EB;--bl:#DBEAFE;
+  --t:#0F172A;--t2:#475569;--t3:#94A3B8;--t4:#CBD5E1;
+  --bg:#F8FAFC;--s:#fff;--bd:#E2E8F0;
+  --sh:0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);
+  --shm:0 4px 16px rgba(15,23,42,.08);
+  --shl:0 8px 32px rgba(15,23,42,.1);
+  --fn:'Outfit',sans-serif;--mo:'JetBrains Mono',monospace;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;
+}
+html,body{height:100%;font-family:var(--fn);color:var(--t);background:var(--bg);font-size:14px;line-height:1.5;}
+
+/* ─── ONBOARDING ─── */
+#onboarding{
+  position:fixed;inset:0;background:var(--s);z-index:1000;
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.ob-header{
+  padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--bd);
+}
+.ob-logo{display:flex;align-items:center;gap:10px;}
+.ob-logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--p);display:flex;align-items:center;justify-content:center;
+}
+.ob-logo-icon svg{width:20px;height:20px;}
+.ob-logo-name{font-size:17px;font-weight:800;color:var(--t);}
+.ob-logo-name span{color:var(--p);}
+.ob-step-info{font-size:12px;color:var(--t3);font-weight:500;}
+
+.ob-progress-bar{
+  height:3px;background:var(--bd);
+  transition:none;
+}
+.ob-progress-fill{
+  height:3px;background:linear-gradient(90deg,var(--p),var(--b));
+  transition:width .4s ease;
+}
+
+.ob-body{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:2.5rem 1.5rem 3rem;max-width:620px;margin:0 auto;width:100%;
+}
+.ob-step{display:none;}
+.ob-step.active{display:flex;flex-direction:column;width:100%;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+.ob-q-num{
+  display:inline-block;background:var(--pl);color:var(--p2);
+  font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:1rem;
+}
+.ob-q-title{font-size:22px;font-weight:700;color:var(--t);margin-bottom:.5rem;line-height:1.3;}
+.ob-q-sub{font-size:14px;color:var(--t2);margin-bottom:2rem;}
+
+.ob-options{display:flex;flex-direction:column;gap:10px;width:100%;}
+.ob-opt{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border:1.5px solid var(--bd);border-radius:var(--r12);
+  cursor:pointer;transition:all .15s;background:var(--s);
+}
+.ob-opt:hover{border-color:var(--p);background:var(--pl);}
+.ob-opt.selected{border-color:var(--p);background:var(--pl);}
+.ob-opt-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.ob-opt.selected .ob-opt-icon{background:var(--pm);}
+.ob-opt-text{}
+.ob-opt-label{font-size:14px;font-weight:600;color:var(--t);}
+.ob-opt-sub{font-size:12px;color:var(--t3);margin-top:1px;}
+
+/* input fields */
+.ob-field{margin-bottom:16px;width:100%;}
+.ob-label{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block;}
+.ob-input{
+  width:100%;padding:12px 14px;border:1.5px solid var(--bd);border-radius:var(--r12);
+  font-family:var(--fn);font-size:15px;font-weight:500;color:var(--t);
+  background:var(--s);outline:none;transition:border .15s;
+}
+.ob-input:focus{border-color:var(--p);}
+.ob-input-prefix{position:relative;}
+.ob-input-prefix span{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:14px;font-weight:600;color:var(--t3);
+}
+.ob-input-prefix input{padding-left:32px;}
+
+/* slider */
+.ob-slider-wrap{width:100%;margin-bottom:8px;}
+.ob-slider-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.ob-slider-label{font-size:13px;font-weight:600;color:var(--t2);}
+.ob-slider-val{font-size:16px;font-weight:700;color:var(--p);font-family:var(--mo);}
+input[type=range]{
+  width:100%;appearance:none;height:5px;
+  background:linear-gradient(90deg, var(--p) var(--pct,50%), var(--bd) var(--pct,50%));
+  border-radius:3px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--p);cursor:pointer;
+  box-shadow:0 0 0 4px rgba(124,58,237,.15);
+}
+
+/* score card */
+.ob-score-card{
+  background:linear-gradient(135deg,var(--p),var(--p3));
+  border-radius:var(--r20);padding:2rem;color:white;
+  text-align:center;width:100%;margin-bottom:1.5rem;
+}
+.ob-score-num{font-size:64px;font-weight:800;line-height:1;font-family:var(--mo);}
+.ob-score-label{font-size:14px;opacity:.8;margin-top:4px;}
+.ob-score-perfil{font-size:20px;font-weight:700;margin-top:12px;}
+.ob-score-sub{font-size:13px;opacity:.75;margin-top:4px;}
+
+.ob-score-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-bottom:1.5rem;
+}
+.ob-score-stat{
+  background:var(--s);border:1px solid var(--bd);border-radius:var(--r12);
+  padding:12px;text-align:center;
+}
+.ob-score-stat-v{font-size:18px;font-weight:700;color:var(--p);font-family:var(--mo);}
+.ob-score-stat-l{font-size:11px;color:var(--t3);margin-top:3px;}
+
+.ob-alloc-preview{
+  background:var(--s);border:1px solid var(--bd);border-radius:var(--r16);
+  padding:1.25rem;width:100%;margin-bottom:1.5rem;
+}
+.ob-alloc-title{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:12px;}
+.ob-alloc-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.ob-alloc-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.ob-alloc-name{flex:1;font-size:13px;color:var(--t2);}
+.ob-alloc-track{flex:2;height:5px;background:var(--bg);border-radius:3px;}
+.ob-alloc-fill{height:5px;border-radius:3px;}
+.ob-alloc-pct{font-size:13px;font-weight:700;color:var(--t);min-width:34px;text-align:right;font-family:var(--mo);}
+
+.ob-nav{
+  display:flex;gap:10px;width:100%;margin-top:auto;padding-top:2rem;
+}
+.btn-primary{
+  flex:1;padding:14px;background:var(--p);color:white;border:none;
+  border-radius:var(--r12);font-family:var(--fn);font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.btn-primary:hover{background:var(--p2);}
+.btn-secondary{
+  padding:14px 20px;background:var(--s);color:var(--t2);
+  border:1.5px solid var(--bd);border-radius:var(--r12);
+  font-family:var(--fn);font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.btn-secondary:hover{border-color:var(--p);color:var(--p);}
+
+/* ─── APP ─── */
+#app{display:none;height:100vh;overflow:hidden;flex-direction:row;}
+#app.visible{display:flex;}
+
+/* SIDEBAR */
+.sb{
+  width:240px;flex-shrink:0;background:var(--s);
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;padding:1.5rem 0;
+}
+.sb-logo{
+  padding:0 1.25rem 1.25rem;
+  border-bottom:1px solid var(--bd);margin-bottom:1.25rem;
+}
+.sb-logo-row{display:flex;align-items:center;gap:10px;}
+.sb-logo-icon{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--p);display:flex;align-items:center;justify-content:center;
+}
+.sb-logo-icon svg{width:19px;height:19px;}
+.sb-logo-name{font-size:16px;font-weight:800;color:var(--t);}
+.sb-logo-name span{color:var(--p);}
+.sb-logo-plan{
+  margin-top:8px;font-size:11px;color:var(--t3);
+  display:flex;align-items:center;gap:6px;
+}
+.sb-plan-pill{
+  background:var(--pl);color:var(--p2);
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;
+}
+
+.sb-nav{padding:0 .75rem;flex:1;}
+.sb-nav-label{
+  font-size:10px;font-weight:700;color:var(--t4);
+  text-transform:uppercase;letter-spacing:.8px;
+  padding:0 .5rem;margin:0 0 4px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;cursor:pointer;font-size:13px;color:var(--t2);
+  border-radius:10px;font-weight:500;margin-bottom:2px;
+  transition:all .15s;
+}
+.sb-item:hover{background:var(--pl);color:var(--p);}
+.sb-item.active{background:var(--pl);color:var(--p2);font-weight:600;}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;}
+.sb-item .sb-badge{
+  margin-left:auto;font-size:10px;font-weight:700;
+  background:var(--p);color:white;padding:2px 6px;border-radius:10px;
+}
+
+.sb-bottom{
+  padding:1rem 1.25rem;border-top:1px solid var(--bd);
+}
+.fire-widget{
+  background:linear-gradient(135deg,var(--p),#4F46E5);
+  border-radius:16px;padding:14px;color:white;
+}
+.fw-label{font-size:10px;font-weight:600;opacity:.75;text-transform:uppercase;letter-spacing:.7px;}
+.fw-pct{font-size:26px;font-weight:800;line-height:1;margin:4px 0 2px;font-family:var(--mo);}
+.fw-bar-bg{height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin-bottom:6px;}
+.fw-bar-fill{height:4px;background:white;border-radius:2px;transition:width .5s ease;}
+.fw-sub{font-size:11px;opacity:.7;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{
+  padding:1rem 1.75rem;background:var(--s);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.tb-left{}
+.tb-title{font-size:18px;font-weight:800;color:var(--t);}
+.tb-sub{font-size:12px;color:var(--t3);margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-chip{
+  font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;
+  display:flex;align-items:center;gap:5px;
+}
+.chip-g{background:var(--gl);color:#065F46;}
+.chip-p{background:var(--pl);color:var(--p3);}
+.chip-a{background:var(--al);color:#92400E;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+.scroll-area{flex:1;overflow-y:auto;padding:1.5rem 1.75rem;}
+.scroll-area::-webkit-scrollbar{width:4px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+
+.page{display:none;}
+.page.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* ─── MÉTRICAS ─── */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.grid32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:1.25rem;}
+
+.card{
+  background:var(--s);border:1px solid var(--bd);
+  border-radius:var(--r16);padding:1.25rem;box-shadow:var(--sh);
+}
+.card-sm{padding:1rem 1.25rem;}
+.c-title{font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px;}
+.c-sub{font-size:12px;color:var(--t3);margin-bottom:1rem;}
+
+.mc{
+  background:var(--s);border:1px solid var(--bd);
+  border-radius:var(--r16);padding:1.1rem 1.25rem;
+  box-shadow:var(--sh);position:relative;overflow:hidden;
+}
+.mc::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+}
+.mc.purple::before{background:var(--p);}
+.mc.green::before{background:var(--g);}
+.mc.amber::before{background:var(--a);}
+.mc.blue::before{background:var(--b);}
+.mc-l{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.mc-v{font-size:21px;font-weight:800;color:var(--t);line-height:1.1;font-family:var(--mo);}
+.mc-s{font-size:11px;color:var(--t3);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.up{color:var(--g);font-weight:700;}
+.dn{color:var(--r);font-weight:700;}
+
+/* alloc */
+.alloc-list{display:flex;flex-direction:column;gap:10px;}
+.alloc-row{display:flex;align-items:center;gap:10px;}
+.alloc-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.alloc-name{flex:1;font-size:12px;color:var(--t2);font-weight:500;}
+.alloc-track{width:80px;height:4px;background:var(--bg);border-radius:2px;}
+.alloc-fill{height:4px;border-radius:2px;}
+.alloc-pct{font-size:12px;font-weight:700;color:var(--t);min-width:32px;text-align:right;font-family:var(--mo);}
+
+/* fire bar */
+.fire-bar-bg{height:8px;background:var(--bg);border-radius:4px;margin:.75rem 0;}
+.fire-bar-fill{
+  height:8px;border-radius:4px;
+  background:linear-gradient(90deg,var(--p),var(--b));
+  transition:width .6s ease;
+}
+.fire-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.fire-stat{background:var(--bg);border-radius:12px;padding:10px 12px;}
+.fsl{font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.fsv{font-size:16px;font-weight:800;color:var(--t);font-family:var(--mo);}
+
+/* table */
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{
+  font-size:10px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.5px;
+  padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd);
+}
+.data-table td{
+  padding:11px 12px;font-size:12px;color:var(--t2);
+  border-bottom:1px solid var(--bg);
+}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--bg);}
+.asset-pill{display:flex;align-items:center;gap:8px;}
+.asset-icon{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;
+}
+
+/* sliders */
+.sl-g{margin-bottom:14px;}
+.sl-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.sl-n{font-size:12px;color:var(--t2);font-weight:600;}
+.sl-v{font-size:14px;font-weight:800;color:var(--p);font-family:var(--mo);}
+
+/* IA */
+.ia-status{display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
+.ia-pulse{
+  width:8px;height:8px;border-radius:50%;background:var(--g);
+  animation:blink 2s infinite;
+}
+.ia-status-text{font-size:13px;font-weight:600;color:var(--t2);}
+
+.ia-card{
+  background:var(--pl);border:1px solid var(--pm);
+  border-left:3px solid var(--p);
+  border-radius:0 12px 12px 0;
+  padding:14px 16px;margin-bottom:10px;font-size:13px;color:#3B0764;line-height:1.7;
+}
+.ia-card strong{color:var(--p3);}
+.ia-hl{font-weight:800;color:var(--p);}
+
+.ia-action{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 16px;background:var(--s);
+  border:1.5px solid var(--pm);border-radius:12px;
+  cursor:pointer;font-size:13px;font-weight:600;color:var(--p);
+  font-family:var(--fn);transition:all .15s;text-align:left;
+}
+.ia-action:hover{background:var(--pl);border-color:var(--p);}
+.ia-action svg{width:14px;height:14px;flex-shrink:0;}
+
+/* stress */
+.stress-card{border-radius:12px;padding:14px;}
+.stress-label{font-size:12px;font-weight:700;margin-bottom:6px;}
+.stress-val{font-size:20px;font-weight:800;font-family:var(--mo);}
+.stress-sub{font-size:11px;margin-top:4px;opacity:.75;}
+
+/* GA */
+.ga-card{
+  background:linear-gradient(135deg,#0F172A,#1E293B);
+  border-radius:16px;padding:1.25rem;color:white;margin-bottom:12px;
+}
+.ga-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(124,58,237,.3);border:1px solid rgba(139,92,246,.4);
+  color:#C4B5FD;font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:20px;margin-bottom:.75rem;
+}
+.ga-dot{width:6px;height:6px;border-radius:50%;background:#A78BFA;animation:blink 1.5s infinite;}
+.ga-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.ga-sub{font-size:12px;opacity:.6;margin-bottom:1rem;}
+.ga-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ga-metric{background:rgba(255,255,255,.06);border-radius:10px;padding:10px;}
+.ga-ml{font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.ga-mv{font-size:18px;font-weight:800;font-family:var(--mo);}
+.ga-mv.green{color:#34D399;}
+.ga-mv.purple{color:#A78BFA;}
+
+/* risk profile pill */
+.risk-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+}
+
+/* VIX SCORE */
+.vix-bar-wrap{
+  background:linear-gradient(90deg,var(--gl),var(--al),var(--rl));
+  height:6px;border-radius:3px;position:relative;margin:8px 0;
+}
+.vix-pointer{
+  position:absolute;top:-4px;width:14px;height:14px;
+  border-radius:50%;background:white;border:2px solid var(--t);
+  transform:translateX(-50%);transition:left .5s ease;
+}
+
+/* LEGENDA */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2);}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* ONBOARDING WELCOME */
+.ob-welcome{
+  text-align:center;padding:1rem 0 2rem;
+}
+.ob-welcome-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:linear-gradient(135deg,var(--p),#4F46E5);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.25rem;
+}
+.ob-welcome-icon svg{width:40px;height:40px;}
+.ob-welcome-title{font-size:26px;font-weight:800;color:var(--t);margin-bottom:.5rem;}
+.ob-welcome-sub{font-size:15px;color:var(--t2);line-height:1.6;max-width:420px;margin:0 auto 2rem;}
+.ob-feature-list{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  text-align:left;margin-bottom:2rem;
+}
+.ob-feature{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--bg);border-radius:12px;padding:12px;
+}
+.ob-feature-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.ob-feature-text{}
+.ob-feature-title{font-size:13px;font-weight:700;color:var(--t);}
+.ob-feature-sub{font-size:11px;color:var(--t3);margin-top:2px;}
+
+/* ─── ROBÔS & GA ─── */
+.robots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.robot-card{background:var(--s);border:1px solid var(--bd);border-radius:var(--r16);padding:12px;cursor:pointer;transition:all .15s;position:relative;}
+.robot-card:hover{border-color:var(--p);transform:translateY(-1px);box-shadow:var(--shm);}
+.robot-card.selected{border:2px solid var(--p);background:var(--pl);}
+.robot-card.elite{border-left:3px solid var(--g);}
+.robot-card.mutante{border-left:3px solid var(--a);}
+.robot-card.extinto{opacity:.45;}
+.robot-avatar{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:8px;}
+.robot-name{font-size:12px;font-weight:700;color:var(--t);margin-bottom:1px;}
+.robot-strain{font-size:10px;color:var(--t3);font-family:var(--mo);margin-bottom:8px;}
+.robot-bar-bg{height:3px;background:var(--bg);border-radius:2px;margin-bottom:5px;}
+.robot-bar-fill{height:3px;border-radius:2px;transition:width .5s ease;}
+.robot-stat-row{display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:2px;}
+.robot-stat-row strong{color:var(--t2);font-weight:600;}
+.alloc-dna{display:flex;height:5px;border-radius:3px;overflow:hidden;gap:1px;margin-top:6px;}
+.dna-seg{height:5px;transition:width .5s ease;}
+.ga-controls-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem;}
+.ga-ctrl{display:flex;flex-direction:column;gap:6px;}
+.ga-ctrl-head{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);}
+.ga-ctrl-val{font-size:12px;font-weight:700;color:var(--p);font-family:var(--mo);}
+.ga-status-bar{background:var(--bg);border-radius:var(--r8);padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--t2);}
+.ga-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
+.cross-arena{background:var(--bg);border-radius:var(--r16);padding:1.25rem;margin-bottom:1.25rem;}
+.cross-row{display:flex;align-items:center;gap:10px;}
+.cross-box{background:var(--s);border:1px solid var(--bd);border-radius:var(--r12);padding:12px;flex:1;text-align:center;min-width:0;}
+.cross-box.filho{border:2px solid var(--p);}
+.cross-dna{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:6px;}
+.dna-gene{font-size:9px;font-weight:600;padding:2px 5px;border-radius:4px;font-family:var(--mo);}
+.cross-sym{font-size:20px;color:var(--t4);flex-shrink:0;text-align:center;}
+.lb-row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--r8);padding:9px 12px;margin-bottom:6px;}
+.lb-rank{font-size:13px;font-weight:800;color:var(--t4);min-width:22px;font-family:var(--mo);}
+.lb-rank.gold{color:var(--a);}
+.lb-rank.silver{color:var(--t3);}
+.lb-rank.bronze{color:#CD7F32;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ ONBOARDING ══════════════════ -->
+<div id="onboarding">
+  <div class="ob-header">
+    <div class="ob-logo">
+      <div class="ob-logo-icon">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L4 6.5v7l6 4.5 6-4.5v-7L10 2z" fill="white" opacity=".9"/>
+          <path d="M10 7v6M7 8.5l3 2 3-2" stroke="#7C3AED" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="ob-logo-name">Finan<span>Map</span> Pro</div>
+    </div>
+    <div class="ob-step-info" id="ob-step-counter">Configuração inicial</div>
+  </div>
+  <div class="ob-progress-bar"><div class="ob-progress-fill" id="ob-progress" style="width:0%"></div></div>
+
+  <div class="ob-body">
+
+    <!-- STEP 0: WELCOME -->
+    <div class="ob-step active" id="ob-step-0">
+      <div class="ob-welcome">
+        <div class="ob-welcome-icon">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path d="M20 4L6 13v14l14 9 14-9V13L20 4z" fill="white" opacity=".9"/>
+            <path d="M20 14v12M14 17l6 4 6-4" stroke="#7C3AED" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ob-welcome-title">Bem-vindo ao FinanMap Pro</div>
+        <div class="ob-welcome-sub">Seu copiloto de investimentos com IA darwiniana, Monte Carlo e Kelly Criterion. Leva 2 minutos para configurar seu perfil.</div>
+        <div class="ob-feature-list">
+          <div class="ob-feature">
+            <div class="ob-feature-icon" style="background:var(--pl);">🧬</div>
+            <div class="ob-feature-text">
+              <div class="ob-feature-title">IA Darwiniana</div>
+              <div class="ob-feature-sub">Algoritmo genético otimiza sua carteira continuamente</div>
+            </div>
+          </div>
+          <div class="ob-feature">
+            <div class="ob-feature-icon" style="background:var(--gl);">🎲</div>
+            <div class="ob-feature-text">
+              <div class="ob-feature-title">Monte Carlo</div>
+              <div class="ob-feature-sub">10.000 simulações para calcular seu FIRE</div>
+            </div>
+          </div>
+          <div class="ob-feature">
+            <div class="ob-feature-icon" style="background:var(--bl);">📐</div>
+            <div class="ob-feature-text">
+              <div class="ob-feature-title">Kelly Criterion</div>
+              <div class="ob-feature-sub">Alocação ótima baseada em risco/retorno real</div>
+            </div>
+          </div>
+          <div class="ob-feature">
+            <div class="ob-feature-icon" style="background:var(--al);">🔥</div>
+            <div class="ob-feature-text">
+              <div class="ob-feature-title">FIRE Tracker</div>
+              <div class="ob-feature-sub">Patrimônio vs 25× despesas com inflação IBGE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-primary" onclick="obNext()">Começar configuração →</button>
+      </div>
+    </div>
+
+    <!-- STEP 1: OBJETIVO -->
+    <div class="ob-step" id="ob-step-1">
+      <div class="ob-q-num">Pergunta 1 de 6</div>
+      <div class="ob-q-title">Qual é seu principal objetivo financeiro?</div>
+      <div class="ob-q-sub">Isso define a lógica de alocação e o FIRE Tracker.</div>
+      <div class="ob-options">
+        <div class="ob-opt" onclick="obSelect(this, 'objetivo', 'fire')">
+          <div class="ob-opt-icon">🔥</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Independência Financeira (FIRE)</div>
+            <div class="ob-opt-sub">Aposentadoria precoce via acúmulo patrimonial</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'objetivo', 'crescimento')">
+          <div class="ob-opt-icon">📈</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Crescimento patrimonial</div>
+            <div class="ob-opt-sub">Maximizar retorno no longo prazo</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'objetivo', 'renda')">
+          <div class="ob-opt-icon">💰</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Renda passiva</div>
+            <div class="ob-opt-sub">Dividendos e FIIs para fluxo mensal</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'objetivo', 'reserva')">
+          <div class="ob-opt-icon">🛡️</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Segurança e reserva</div>
+            <div class="ob-opt-sub">Proteger patrimônio com baixo risco</div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()">← Voltar</button>
+        <button class="btn-primary" onclick="obNext()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: APORTE E PATRIMÔNIO -->
+    <div class="ob-step" id="ob-step-2">
+      <div class="ob-q-num">Pergunta 2 de 6</div>
+      <div class="ob-q-title">Qual é sua situação financeira atual?</div>
+      <div class="ob-q-sub">Usamos isso para calibrar o FIRE Tracker e o Kelly Criterion.</div>
+      <div class="ob-field">
+        <label class="ob-label">Patrimônio investido atual</label>
+        <div class="ob-input-prefix">
+          <span>R$</span>
+          <input class="ob-input" id="ob-patrimonio" type="number" placeholder="50.000" value="50000">
+        </div>
+      </div>
+      <div class="ob-field">
+        <label class="ob-label">Aporte mensal disponível</label>
+        <div class="ob-input-prefix">
+          <span>R$</span>
+          <input class="ob-input" id="ob-aporte" type="number" placeholder="2.000" value="2000">
+        </div>
+      </div>
+      <div class="ob-field">
+        <label class="ob-label">Despesas mensais</label>
+        <div class="ob-input-prefix">
+          <span>R$</span>
+          <input class="ob-input" id="ob-desp" type="number" placeholder="5.000" value="5000">
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()">← Voltar</button>
+        <button class="btn-primary" onclick="obNext()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: TOLERÂNCIA A RISCO -->
+    <div class="ob-step" id="ob-step-3">
+      <div class="ob-q-num">Pergunta 3 de 6</div>
+      <div class="ob-q-title">Como você reage a quedas no mercado?</div>
+      <div class="ob-q-sub">Baseado em VIX histórico e psicologia comportamental.</div>
+      <div class="ob-options">
+        <div class="ob-opt" onclick="obSelect(this, 'reacao', 'vende')">
+          <div class="ob-opt-icon">😨</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Vendo tudo — queda me assusta</div>
+            <div class="ob-opt-sub">Score de risco: baixo (0–30)</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'reacao', 'espera')">
+          <div class="ob-opt-icon">😐</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Espero a recuperação</div>
+            <div class="ob-opt-sub">Score de risco: moderado (30–60)</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'reacao', 'compra')">
+          <div class="ob-opt-icon">😎</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Compro mais na queda</div>
+            <div class="ob-opt-sub">Score de risco: agressivo (60–85)</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'reacao', 'all-in')">
+          <div class="ob-opt-icon">🔥</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">All-in — volatilidade é oportunidade</div>
+            <div class="ob-opt-sub">Score de risco: muito agressivo (85–100)</div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()">← Voltar</button>
+        <button class="btn-primary" onclick="obNext()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: EXPERIÊNCIA -->
+    <div class="ob-step" id="ob-step-4">
+      <div class="ob-q-num">Pergunta 4 de 6</div>
+      <div class="ob-q-title">Qual é sua experiência com investimentos?</div>
+      <div class="ob-q-sub">Ajusta a complexidade das recomendações da IA.</div>
+      <div class="ob-options">
+        <div class="ob-opt" onclick="obSelect(this, 'exp', 'iniciante')">
+          <div class="ob-opt-icon">🌱</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Iniciante</div>
+            <div class="ob-opt-sub">Nunca investi ou só poupança/CDB</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'exp', 'intermediario')">
+          <div class="ob-opt-icon">📊</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Intermediário</div>
+            <div class="ob-opt-sub">Tenho ações, FIIs ou ETFs</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'exp', 'avancado')">
+          <div class="ob-opt-icon">⚡</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Avançado</div>
+            <div class="ob-opt-sub">Opções, derivativos ou cripto ativo</div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()">← Voltar</button>
+        <button class="btn-primary" onclick="obNext()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: HORIZONTE -->
+    <div class="ob-step" id="ob-step-5">
+      <div class="ob-q-num">Pergunta 5 de 6</div>
+      <div class="ob-q-title">Em quanto tempo quer atingir independência financeira?</div>
+      <div class="ob-q-sub">Define o horizonte para o Monte Carlo e o algoritmo genético.</div>
+      <div class="ob-slider-wrap">
+        <div class="ob-slider-head">
+          <span class="ob-slider-label">Horizonte desejado</span>
+          <span class="ob-slider-val" id="ob-horizonte-val">10 anos</span>
+        </div>
+        <input type="range" id="ob-horizonte" min="3" max="35" value="10" step="1"
+          oninput="document.getElementById('ob-horizonte-val').textContent=this.value+' anos';updateSliderBg(this);">
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:4px;margin-bottom:2rem;">
+        <span>3 anos (agressivo)</span><span>20 anos (moderado)</span><span>35 anos (conservador)</span>
+      </div>
+      <div class="ob-options">
+        <div class="ob-opt" onclick="obSelect(this, 'cripto', 'sim')">
+          <div class="ob-opt-icon">₿</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Incluir cripto na carteira</div>
+            <div class="ob-opt-sub">BTC/ETH com yield 8-15% via staking</div>
+          </div>
+        </div>
+        <div class="ob-opt" onclick="obSelect(this, 'cripto', 'nao')">
+          <div class="ob-opt-icon">🏦</div>
+          <div class="ob-opt-text">
+            <div class="ob-opt-label">Somente ativos tradicionais</div>
+            <div class="ob-opt-sub">Ações, FIIs, Tesouro, ETFs</div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn-secondary" onclick="obBack()">← Voltar</button>
+        <button class="btn-primary" onclick="obNext()">Calcular meu perfil →</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: RESULTADO DO PERFIL -->
+    <div class="ob-step" id="ob-step-6">
+      <div class="ob-q-num">Pergunta 6 de 6 — Seu Perfil</div>
+      <div class="ob-q-title">Perfil de risco calculado</div>
+      <div class="ob-q-sub">Baseado em VIX histórico 2018–2026 · Score 0–100</div>
+
+      <div class="ob-score-card" id="ob-score-card">
+        <div class="ob-score-num" id="ob-score-num">72</div>
+        <div class="ob-score-label">Score de risco (VIX-adjusted)</div>
+        <div class="ob-score-perfil" id="ob-score-perfil">Moderado-Agressivo</div>
+        <div class="ob-score-sub" id="ob-score-sub">Sharpe histórico esperado: 1.82 · Sigma: 18%</div>
+      </div>
+
+      <div class="ob-score-grid">
+        <div class="ob-score-stat">
+          <div class="ob-score-stat-v" id="ob-sc-anos">8.3a</div>
+          <div class="ob-score-stat-l">Anos para FIRE (p50)</div>
+        </div>
+        <div class="ob-score-stat">
+          <div class="ob-score-stat-v" id="ob-sc-meta">R$600k</div>
+          <div class="ob-score-stat-l">Meta patrimonial</div>
+        </div>
+        <div class="ob-score-stat">
+          <div class="ob-score-stat-v" id="ob-sc-prob">87%</div>
+          <div class="ob-score-stat-l">Prob. de sucesso</div>
+        </div>
+      </div>
+
+      <div class="ob-alloc-preview">
+        <div class="ob-alloc-title">Alocação recomendada pelo Kelly Criterion</div>
+        <div id="ob-alloc-rows">
+          <!-- gerado por JS -->
+        </div>
+      </div>
+
+      <div class="ob-nav">
+        <button class="btn-primary" onclick="launchApp()" style="font-size:16px;">Acessar o FinanMap Pro →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════ APP ══════════════════ -->
+<div id="app">
+  <div class="sb">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-logo-icon">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L4 6.5v7l6 4.5 6-4.5v-7L10 2z" fill="white" opacity=".9"/>
+            <path d="M10 7v6M7 8.5l3 2 3-2" stroke="#7C3AED" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="sb-logo-name">Finan<span>Map</span> Pro</div>
+      </div>
+      <div class="sb-logo-plan">
+        <span class="sb-plan-pill">PRO</span>
+        R$9,90/mês · ativo
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="showPage('dashboard',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="2" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="2" fill="currentColor" opacity=".35"/><rect x="1" y="9" width="6" height="6" rx="2" fill="currentColor" opacity=".35"/><rect x="9" y="9" width="6" height="6" rx="2" fill="currentColor" opacity=".35"/></svg>
+        Início
+      </div>
+      <div class="sb-item" onclick="showPage('portfolio',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 11L6 7l4 2.5 4-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="7" r="1.5" fill="currentColor"/><circle cx="10" cy="9.5" r="1.5" fill="currentColor"/></svg>
+        Portfólio
+      </div>
+      <div class="sb-item" onclick="showPage('fire',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 1.5C6 5 4 6 4 9.5a4 4 0 008 0C12 6 10 5 8 1.5z" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M8 12.5v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".5"/></svg>
+        FIRE Tracker
+      </div>
+      <div class="sb-item" onclick="showPage('sim',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="10" width="3" height="5" rx="1" fill="currentColor" opacity=".4"/><rect x="6" y="6" width="3" height="9" rx="1" fill="currentColor" opacity=".65"/><rect x="11" y="3" width="3" height="12" rx="1" fill="currentColor"/></svg>
+        Simulador
+      </div>
+      <div class="sb-item" onclick="showPage('robos',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="5" width="10" height="8" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/><path d="M6 5V3.5a2 2 0 014 0V5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="6" cy="9" r="1" fill="currentColor"/><circle cx="10" cy="9" r="1" fill="currentColor"/><path d="M6 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Robôs &amp; GA
+        <span class="sb-badge" style="background:var(--a)">NEW</span>
+      </div>
+      <div class="sb-item" onclick="showPage('ia',this)">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 5.5v2.5l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5.5 11l5-6" stroke="currentColor" stroke-width="1" opacity=".3" stroke-linecap="round"/></svg>
+        IA Advisor
+        <span class="sb-badge">3</span>
+      </div>
+    </div>
+
+    <div class="sb-bottom">
+      <div class="fire-widget">
+        <div class="fw-label">FIRE Progress</div>
+        <div class="fw-pct" id="fw-pct">—%</div>
+        <div class="fw-bar-bg"><div class="fw-bar-fill" id="fw-bar"></div></div>
+        <div class="fw-sub" id="fw-sub">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <div class="tb-title" id="tb-title">Início</div>
+        <div class="tb-sub" id="tb-sub">Bem-vindo ao FinanMap Pro</div>
+      </div>
+      <div class="tb-right">
+        <div class="tb-chip chip-g"><div class="live-dot"></div>Mercado aberto</div>
+        <div class="tb-chip chip-p" id="tb-risk-chip">Perfil: —</div>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- ═══ DASHBOARD ═══ -->
+      <div class="page active" id="page-dashboard">
+        <div class="grid4">
+          <div class="mc purple">
+            <div class="mc-l">Patrimônio Total</div>
+            <div class="mc-v" id="mc-pat" style="color:var(--p)">R$—</div>
+            <div class="mc-s"><span class="up">↑ +R$3.840</span> este mês</div>
+          </div>
+          <div class="mc green">
+            <div class="mc-l">Rentabilidade 12m</div>
+            <div class="mc-v">18,4%</div>
+            <div class="mc-s"><span class="up">↑ +6,3pp</span> vs IBOV 12,1%</div>
+          </div>
+          <div class="mc amber">
+            <div class="mc-l">Aporte Mensal</div>
+            <div class="mc-v" id="mc-aporte">R$—</div>
+            <div class="mc-s" style="color:var(--t3)">Backtest Sharpe: <strong>1,82</strong></div>
+          </div>
+          <div class="mc blue">
+            <div class="mc-l">Score de Risco</div>
+            <div class="mc-v" id="mc-score" style="color:var(--b)">—</div>
+            <div class="mc-s" id="mc-score-label" style="color:var(--t3)">VIX-adjusted</div>
+          </div>
+        </div>
+
+        <div class="grid32">
+          <div class="card">
+            <div class="c-title">Evolução Patrimonial</div>
+            <div class="c-sub">Últimos 12 meses · yfinance 2026</div>
+            <div style="position:relative;height:190px;"><canvas id="ch-patrim"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="c-title">Alocação Kelly Criterion</div>
+            <div class="c-sub">Otimizada pelo algoritmo genético</div>
+            <div class="alloc-list" id="dash-alloc"><!-- JS --></div>
+            <div style="margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--bd);display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><div style="font-size:11px;color:var(--t3);">Sharpe Ratio</div><div style="font-size:18px;font-weight:800;font-family:var(--mo);color:var(--p);">1,82</div><div style="font-size:10px;color:var(--t3);">vs BOVA11: 0,91</div></div>
+              <div><div style="font-size:11px;color:var(--t3);">Sortino Ratio</div><div style="font-size:18px;font-weight:800;font-family:var(--mo);color:var(--g);">2,14</div><div style="font-size:10px;color:var(--t3);">pós-rebalanceamento GA</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;">
+            <div><div class="c-title">FIRE Tracker</div><div class="c-sub" style="margin-bottom:0;">Meta: 25× despesas · Regra dos 4% · Monte Carlo 10k sims</div></div>
+            <div class="tb-chip chip-a" id="dash-fire-badge">— anos</div>
+          </div>
+          <div class="fire-bar-bg"><div class="fire-bar-fill" id="dash-fire-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-bottom:1rem;">
+            <span id="dash-fire-atual">—</span><span id="dash-fire-pct">—%</span><span id="dash-fire-meta">Meta: —</span>
+          </div>
+          <div class="fire-stats-grid">
+            <div class="fire-stat"><div class="fsl">Patrimônio</div><div class="fsv" id="fsg-pat" style="color:var(--p)">—</div></div>
+            <div class="fire-stat"><div class="fsl">Projeção p90</div><div class="fsv" id="fsg-p90" style="color:var(--a)">—</div></div>
+            <div class="fire-stat"><div class="fsl">Taxa retirada</div><div class="fsv">4,0%</div></div>
+            <div class="fire-stat"><div class="fsl">Prob. sucesso</div><div class="fsv" id="fsg-prob" style="color:var(--g)">—%</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PORTFÓLIO ═══ -->
+      <div class="page" id="page-portfolio">
+        <div class="grid4">
+          <div class="mc purple"><div class="mc-l">Custo médio</div><div class="mc-v" id="pf-custo">R$—</div><div class="mc-s">Total investido</div></div>
+          <div class="mc green"><div class="mc-l">Valor Atual</div><div class="mc-v" id="pf-atual" style="color:var(--g)">R$—</div><div class="mc-s up" id="pf-ganho">—</div></div>
+          <div class="mc amber"><div class="mc-l">Dividendos 12m</div><div class="mc-v">R$8.420</div><div class="mc-s">yield 3,4%</div></div>
+          <div class="mc blue"><div class="mc-l">DARF Estimado</div><div class="mc-v" style="color:var(--a)">R$2.340</div><div class="mc-s" style="color:var(--t3)">pendente</div></div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <div class="c-title" style="margin-bottom:1rem;">Carteira detalhada · B3 + Cripto + RF</div>
+          <table class="data-table">
+            <thead><tr><th>Ativo</th><th>Tipo</th><th>Qtd</th><th>Preço</th><th>Total</th><th>Retorno</th><th>% Cart.</th></tr></thead>
+            <tbody id="portfolio-tbody"><!-- JS --></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="c-title">Performance vs Benchmarks</div>
+          <div class="c-sub">Últimos 12 meses · Base 100</div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--p)"></div>FinanMap Pro</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--b)"></div>BOVA11</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--t4)"></div>CDI</div>
+          </div>
+          <div style="position:relative;height:160px;"><canvas id="ch-bench"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ═══ FIRE TRACKER ═══ -->
+      <div class="page" id="page-fire">
+        <div class="grid2">
+          <div class="card">
+            <div class="c-title">Parâmetros FIRE</div>
+            <div class="c-sub">Monte Carlo · 10.000 simulações · VIX-adjusted</div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Despesas mensais (R$)</span><span class="sl-v" id="fire-d-v">R$5.000</span></div>
+              <input type="range" id="fire-d" min="1000" max="15000" value="5000" step="100" oninput="uFire();updateSliderBg(this)">
+            </div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Aporte mensal (R$)</span><span class="sl-v" id="fire-a-v">R$2.000</span></div>
+              <input type="range" id="fire-a" min="500" max="20000" value="2000" step="500" oninput="uFire();updateSliderBg(this)">
+            </div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Rentabilidade anual (%)</span><span class="sl-v" id="fire-r-v">12%</span></div>
+              <input type="range" id="fire-r" min="4" max="25" value="12" step="0.5" oninput="uFire();updateSliderBg(this)">
+            </div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Patrimônio atual (R$)</span><span class="sl-v" id="fire-p-v">R$50.000</span></div>
+              <input type="range" id="fire-p" min="0" max="1000000" value="50000" step="5000" oninput="uFire();updateSliderBg(this)">
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+              <div class="c-title">Resultado Monte Carlo</div>
+              <div class="c-sub">10.000 simulações · sigma 18% · mu ajustado</div>
+            </div>
+            <div style="text-align:center;padding:.5rem 0;">
+              <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Você atinge FIRE em</div>
+              <div style="font-size:44px;font-weight:800;color:var(--p);line-height:1;margin:8px 0;font-family:var(--mo);" id="fire-anos-big">—</div>
+              <div style="font-size:13px;color:var(--t3);">com <strong style="color:var(--g)" id="fire-prob-big">—%</strong> de probabilidade</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="fire-stat"><div class="fsl">Meta (25×12×desp)</div><div class="fsv" id="fire-meta-v" style="color:var(--p)">—</div></div>
+              <div class="fire-stat"><div class="fsl">Cenário p90</div><div class="fsv" id="fire-p90-v" style="color:var(--a)">—</div></div>
+              <div class="fire-stat"><div class="fsl">Progresso atual</div><div class="fsv" id="fire-prog-v">—%</div></div>
+              <div class="fire-stat"><div class="fsl">Renda passiva FIRE</div><div class="fsv" id="fire-renda-v" style="color:var(--g)">R$—/mês</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="c-title">Projeção patrimonial — Cenários</div>
+          <div class="c-sub">Otimista (×1,5) · Base · Estressado (×0,6) · Selic IBGE-inflacionado</div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--g)"></div>Otimista</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--p)"></div>Base</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--r)"></div>Estressado</div>
+          </div>
+          <div style="position:relative;height:210px;"><canvas id="ch-fire-proj"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ═══ SIMULADOR ═══ -->
+      <div class="page" id="page-sim">
+        <div class="grid2">
+          <div class="card">
+            <div class="c-title">Parâmetros</div>
+            <div class="c-sub">Juros compostos mensais · aportes variáveis</div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Capital inicial</span><span class="sl-v" id="si-v">R$50.000</span></div>
+              <input type="range" id="si" min="0" max="500000" value="50000" step="5000" oninput="uSim();updateSliderBg(this)">
+            </div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Aporte mensal</span><span class="sl-v" id="sa-v">R$2.000</span></div>
+              <input type="range" id="sa" min="0" max="30000" value="2000" step="500" oninput="uSim();updateSliderBg(this)">
+            </div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Rentabilidade anual</span><span class="sl-v" id="sr-v">12%</span></div>
+              <input type="range" id="sr" min="1" max="30" value="12" step="0.5" oninput="uSim();updateSliderBg(this)">
+            </div>
+            <div class="sl-g">
+              <div class="sl-h"><span class="sl-n">Horizonte</span><span class="sl-v" id="sh-v">15 anos</span></div>
+              <input type="range" id="sh" min="1" max="40" value="15" step="1" oninput="uSim();updateSliderBg(this)">
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+            <div>
+              <div class="c-title">Patrimônio estimado</div>
+              <div class="c-sub" style="margin-bottom:.5rem;">Cálculo: C×(1+r)^n + A×((1+r)^n-1)/r</div>
+            </div>
+            <div style="text-align:center;padding:.5rem 0;">
+              <div style="font-size:38px;font-weight:800;color:var(--p);font-family:var(--mo);" id="sim-final">—</div>
+              <div style="font-size:12px;color:var(--t3);margin-top:6px;" id="sim-multi">—× o capital investido</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="fire-stat"><div class="fsl">Total aportado</div><div class="fsv" id="sim-ap">—</div></div>
+              <div class="fire-stat"><div class="fsl">Juros gerados</div><div class="fsv" id="sim-ju" style="color:var(--p)">—</div></div>
+              <div class="fire-stat"><div class="fsl">% dos juros</div><div class="fsv" id="sim-pct-ju">—%</div></div>
+              <div class="fire-stat"><div class="fsl">CDI equivalente</div><div class="fsv" id="sim-cdi" style="color:var(--g)">—%</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="c-title">Capital × Juros ao longo do tempo</div>
+          <div class="c-sub">A magia dos juros compostos — quando os juros superam o capital aportado</div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--pm)"></div>Capital aportado</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--p)"></div>Juros compostos</div>
+          </div>
+          <div style="position:relative;height:200px;"><canvas id="ch-sim"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ═══ IA ADVISOR ═══ -->
+      <div class="page" id="page-ia">
+        <div class="ga-card">
+          <div class="ga-badge"><div class="ga-dot"></div>Algoritmo Genético · Rodando em background</div>
+          <div class="ga-title">IA Darwiniana — Nova geração calculada</div>
+          <div class="ga-sub">DEAP · TensorFlow.js · Population 200 · Fitness = Sortino pós-Monte Carlo</div>
+          <div class="ga-metrics">
+            <div class="ga-metric"><div class="ga-ml">CAGR projetado</div><div class="ga-mv green">+28%</div></div>
+            <div class="ga-metric"><div class="ga-ml">Sortino Ratio</div><div class="ga-mv purple">2,14</div></div>
+            <div class="ga-metric"><div class="ga-ml">Gerações evoluídas</div><div class="ga-mv" style="color:#94A3B8">1.847</div></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ia-status">
+            <div class="ia-pulse"></div>
+            <div class="ia-status-text">Análise do portfólio — 26/03/2026</div>
+          </div>
+          <div class="ia-card">
+            <strong>📊 Diversificação:</strong> Carteira bem distribuída. Exposição a FIIs <span class="ia-hl">(5,5%)</span> abaixo do ideal para cenário de juro cadente. FocusEconomics 2026 projeta Selic → 9,5% em Q4. Recomendação: ampliar FIIs para <span class="ia-hl">10–12%</span>.
+          </div>
+          <div class="ia-card">
+            <strong>⚠️ Alerta Kelly Criterion:</strong> BTC representa <span class="ia-hl" id="ia-btc-pct">12,7%</span> da carteira vs. ótimo Kelly de <span class="ia-hl">8,4%</span> para seu perfil. Volatilidade implícita 90d: 68%. Ação recomendada: vender <span class="ia-hl">R$6.800</span> em cripto → Tesouro IPCA+.
+          </div>
+          <div class="ia-card">
+            <strong>🧬 Genética:</strong> Algoritmo evoluiu nova alocação ótima após <span class="ia-hl">10.000 simulações</span> de Monte Carlo com black swans (crash -87% cripto 2022). Nova strain: CAGR projetado <span class="ia-hl">+28%</span>, Sortino <span class="ia-hl">2,14</span>.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:1rem;">
+            <button class="ia-action" onclick="sendPrompt('Me explique em detalhes o cálculo do Kelly Criterion para o portfólio do FinanMap Pro com BTC a 12,7% — quero a fórmula f* = (mu - rf)/sigma² aplicada ao meu caso')">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v6M7 7l3-3M7 7l-3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M1 10v2h12v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Ver cálculo Kelly
+            </button>
+            <button class="ia-action" onclick="sendPrompt('Crie um plano detalhado de aportes mensais para atingir FIRE em 8 anos com R$2.000/mês de aporte no FinanMap Pro, usando Monte Carlo e Kelly Criterion')">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2v10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Plano de aportes
+            </button>
+            <button class="ia-action" onclick="sendPrompt('Como funciona o algoritmo genético DEAP do FinanMap Pro? Explique population 200, genes %Fixa/Var/Cripto, função fitness Sortino e como os black swans são modelados')">
+              <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 5v2.5l1.5 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Como funciona a IA
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="c-title">Stress Test — Cenários de crise</div>
+          <div class="c-sub">Impacto no portfólio · Monte Carlo · Black swans incluídos</div>
+          <div class="grid3" style="margin-top:1rem;margin-bottom:0;">
+            <div class="stress-card" style="background:var(--rl);">
+              <div class="stress-label" style="color:#991B1B;">💥 Crash Cripto (−87%)</div>
+              <div class="stress-val" style="color:var(--r);" id="st-cripto">−R$27.400</div>
+              <div class="stress-sub" style="color:#991B1B;">impacto: −11,1% portfólio</div>
+            </div>
+            <div class="stress-card" style="background:var(--al);">
+              <div class="stress-label" style="color:#92400E;">📉 Recessão BR (−35%)</div>
+              <div class="stress-val" style="color:var(--a);" id="st-rec">−R$41.200</div>
+              <div class="stress-sub" style="color:#92400E;">impacto: −16,7% portfólio</div>
+            </div>
+            <div class="stress-card" style="background:var(--gl);">
+              <div class="stress-label" style="color:#065F46;">🚀 Cenário base</div>
+              <div class="stress-val" style="color:var(--g);" id="st-base">+R$28.600</div>
+              <div class="stress-sub" style="color:#065F46;">retorno projetado: +11,6%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ROBÔS & ALGORITMO GENÉTICO ═══ -->
+      <div class="page" id="page-robos">
+
+        <!-- métricas topo -->
+        <div class="grid4">
+          <div class="mc purple">
+            <div class="mc-l">Robôs Ativos</div>
+            <div class="mc-v" id="rc-ativos" style="color:var(--p)">8</div>
+            <div class="mc-s"><span class="up">4 élite</span> · 2 mutantes</div>
+          </div>
+          <div class="mc green">
+            <div class="mc-l">Melhor Sortino</div>
+            <div class="mc-v" id="rc-sortino">—</div>
+            <div class="mc-s" style="color:var(--t3)">fitness da população</div>
+          </div>
+          <div class="mc amber">
+            <div class="mc-l">Geração atual</div>
+            <div class="mc-v" id="rc-gen">0</div>
+            <div class="mc-s" style="color:var(--t3)">de 50 gerações</div>
+          </div>
+          <div class="mc blue">
+            <div class="mc-l">Melhor CAGR</div>
+            <div class="mc-v" id="rc-cagr" style="color:var(--b)">—%</div>
+            <div class="mc-s" style="color:var(--t3)">projetado pelo GA</div>
+          </div>
+        </div>
+
+        <!-- grade de robôs -->
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;">
+            <div>
+              <div class="c-title">Populaçao de Robôs</div>
+              <div class="c-sub">Cada robô é uma estratégia de alocação evoluída · clique para inspecionar ou selecionar para cruzar</div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <span class="tb-chip chip-g" style="font-size:10px;">élite</span>
+              <span class="tb-chip chip-a" style="font-size:10px;">mutante</span>
+              <span class="tb-chip" style="font-size:10px;background:var(--rl);color:#991B1B;">extinto</span>
+            </div>
+          </div>
+          <div class="robots-grid" id="ga-robots-grid"></div>
+        </div>
+
+        <!-- arena GA -->
+        <div class="grid2" style="margin-bottom:1.25rem;">
+          <div class="card">
+            <div class="c-title">Arena do Algoritmo Genético</div>
+            <div class="c-sub">Evolução em tempo real · Fitness = Sortino pós-Monte Carlo</div>
+            <div class="ga-controls-grid" style="margin-top:.75rem;">
+              <div class="ga-ctrl">
+                <div class="ga-ctrl-head"><span>População</span><span class="ga-ctrl-val" id="gv-pop">200</span></div>
+                <input type="range" id="gr-pop" min="50" max="500" value="200" step="50" oninput="document.getElementById('gv-pop').textContent=this.value">
+              </div>
+              <div class="ga-ctrl">
+                <div class="ga-ctrl-head"><span>Mutação</span><span class="ga-ctrl-val" id="gv-mut">15%</span></div>
+                <input type="range" id="gr-mut" min="5" max="50" value="15" step="1" oninput="document.getElementById('gv-mut').textContent=this.value+'%'">
+              </div>
+              <div class="ga-ctrl">
+                <div class="ga-ctrl-head"><span>Black swan</span><span class="ga-ctrl-val" id="gv-bs">0.5×</span></div>
+                <input type="range" id="gr-bs" min="0" max="2" value="0.5" step="0.1" oninput="document.getElementById('gv-bs').textContent=parseFloat(this.value).toFixed(1)+'×'">
+              </div>
+            </div>
+            <div class="ga-status-bar">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="live-dot" id="ga-dot" style="background:var(--t4)"></div>
+                <span id="ga-txt">Aguardando início</span>
+              </div>
+              <span style="font-family:var(--mo);font-size:11px;" id="ga-gen-txt">Geração 0 / 50</span>
+            </div>
+            <div class="ga-metrics-grid">
+              <div class="fire-stat"><div class="fsl">Sortino</div><div class="fsv" id="gm-s" style="color:var(--p)">—</div></div>
+              <div class="fire-stat"><div class="fsl">CAGR</div><div class="fsv" id="gm-c" style="color:var(--g)">—</div></div>
+              <div class="fire-stat"><div class="fsl">Diversidade</div><div class="fsv" id="gm-d" style="color:var(--a)">—</div></div>
+              <div class="fire-stat"><div class="fsl">Strain</div><div class="fsv" id="gm-st" style="color:var(--t3)">—</div></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn-primary" id="ga-btn-run" onclick="gaStart()" style="flex:1;padding:10px;font-size:13px;">▶ Iniciar evolução</button>
+              <button id="ga-btn-step" onclick="gaStep()" disabled style="padding:10px 14px;font-size:13px;">+1 geração</button>
+              <button onclick="gaReset()" style="padding:10px 14px;font-size:13px;">↺ Reset</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="c-title">Evolução do Fitness</div>
+            <div class="c-sub">Melhor robô vs. média da população</div>
+            <div style="display:flex;gap:14px;margin-bottom:10px;font-size:11px;">
+              <span style="display:flex;align-items:center;gap:4px;color:var(--t2)"><span style="width:10px;height:3px;background:var(--p);display:inline-block;border-radius:1px;"></span>Melhor</span>
+              <span style="display:flex;align-items:center;gap:4px;color:var(--t2)"><span style="width:10px;height:3px;background:var(--t4);display:inline-block;border-radius:1px;"></span>Média pop.</span>
+            </div>
+            <div style="position:relative;height:180px;"><canvas id="ch-ga-fitness"></canvas></div>
+          </div>
+        </div>
+
+        <!-- laboratório de cruzamento -->
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="c-title">Laboratório de Cruzamento</div>
+          <div class="c-sub">Selecione dois robôs na grade acima · crossover uniforme + mutação gaussiana</div>
+          <div class="cross-arena" style="margin-top:.75rem;">
+            <div class="cross-row">
+              <div class="cross-box" id="cp1">
+                <div style="font-size:11px;color:var(--t3);margin-bottom:4px;">Pai 1</div>
+                <div style="font-size:26px;">—</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:4px;">selecione</div>
+              </div>
+              <div class="cross-sym">×</div>
+              <div class="cross-box" id="cp2">
+                <div style="font-size:11px;color:var(--t3);margin-bottom:4px;">Pai 2</div>
+                <div style="font-size:26px;">—</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:4px;">selecione</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                <div class="cross-sym">→</div>
+                <button id="ga-btn-cross" onclick="gaCross()" disabled style="font-size:12px;padding:7px 14px;">Cruzar</button>
+              </div>
+              <div class="cross-box filho" id="cf">
+                <div style="font-size:11px;color:var(--t3);margin-bottom:4px;">Filho gerado</div>
+                <div style="font-size:26px;" id="cf-emoji">?</div>
+                <div style="font-size:10px;color:var(--t3);margin-top:4px;" id="cf-name">aguardando</div>
+                <div class="cross-dna" id="cf-dna"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="grid2">
+          <div class="card">
+            <div class="c-title">Leaderboard — Top Robôs</div>
+            <div class="c-sub">Ranking por Sortino Ratio</div>
+            <div style="margin-top:.75rem;" id="ga-leaderboard"></div>
+          </div>
+          <div class="card" id="ga-detail-card" style="display:none;">
+            <div class="c-title" id="gd-title">Detalhes do Robô</div>
+            <div class="c-sub" id="gd-strain"></div>
+            <div id="gd-alloc" style="margin-top:.75rem;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1rem;" id="gd-stats"></div>
+          </div>
+          <div class="card" id="ga-empty-card">
+            <div style="text-align:center;padding:2rem 1rem;color:var(--t3);">
+              <div style="font-size:32px;margin-bottom:8px;">🤖</div>
+              <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:4px;">Inspecione um robô</div>
+              <div style="font-size:12px;">Clique em qualquer robô da grade para ver seu genoma completo</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page-robos -->
+
+    </div><!-- /scroll-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const S = {
+  step: 0,
+  answers: {},
+  score: 72,
+  perfil: 'Moderado-Agressivo',
+  patrimonio: 50000,
+  aporte: 2000,
+  desp: 5000,
+  horizonte: 10,
+  cripto: 'sim',
+  alloc: {fixa:40,var:30,cripto:20,inter:10},
+  charts: {}
+};
+
+// ─── ONBOARDING ──────────────────────────────────────────────────────────────
+function obNext(){
+  const cur = document.getElementById('ob-step-'+S.step);
+  cur.classList.remove('active');
+  S.step++;
+  if(S.step === 6) calcPerfil();
+  const next = document.getElementById('ob-step-'+S.step);
+  next.classList.add('active');
+  updateProgress();
+}
+function obBack(){
+  document.getElementById('ob-step-'+S.step).classList.remove('active');
+  S.step = Math.max(0, S.step-1);
+  document.getElementById('ob-step-'+S.step).classList.add('active');
+  updateProgress();
+}
+function obSelect(el, key, val){
+  el.closest('.ob-options').querySelectorAll('.ob-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  S.answers[key]=val;
+}
+function updateProgress(){
+  const pct = S.step===0?0: Math.round((S.step/6)*100);
+  document.getElementById('ob-progress').style.width=pct+'%';
+  document.getElementById('ob-step-counter').textContent =
+    S.step===0?'Bem-vindo': S.step===6?'Seu perfil': `Pergunta ${S.step} de 6`;
+}
+
+function calcPerfil(){
+  // Lê inputs
+  const pat = parseFloat(document.getElementById('ob-patrimonio').value)||50000;
+  const ap  = parseFloat(document.getElementById('ob-aporte').value)||2000;
+  const dp  = parseFloat(document.getElementById('ob-desp').value)||5000;
+  const hor = parseInt(document.getElementById('ob-horizonte').value)||10;
+  const cripto = S.answers.cripto||'sim';
+  const reacao = S.answers.reacao||'espera';
+  const exp    = S.answers.exp||'intermediario';
+  const obj    = S.answers.objetivo||'fire';
+
+  // Score baseado em respostas (0-100, VIX-adjusted)
+  let score = 50;
+  const rMap={vende:10,espera:35,compra:65,'all-in':90};
+  const eMap={iniciante:0,intermediario:10,avancado:20};
+  const oMap={fire:5,crescimento:10,renda:0,reserva:-10};
+  score = Math.min(100,Math.max(10, rMap[reacao]+(eMap[exp]||0)+(oMap[obj]||0)));
+
+  // Perfis
+  let perfil,sharpe;
+  if(score<30){perfil='Conservador';sharpe='1,20';}
+  else if(score<55){perfil='Moderado';sharpe='1,45';}
+  else if(score<75){perfil='Moderado-Agressivo';sharpe='1,82';}
+  else{perfil='Agressivo';sharpe='2,10';}
+
+  // Alocação Kelly
+  let alloc;
+  if(cripto==='nao'){
+    if(score<30) alloc={fixa:70,var:20,inter:10,cripto:0};
+    else if(score<55) alloc={fixa:50,var:35,inter:15,cripto:0};
+    else if(score<75) alloc={fixa:35,var:45,inter:20,cripto:0};
+    else alloc={fixa:20,var:60,inter:20,cripto:0};
+  } else {
+    if(score<30) alloc={fixa:60,var:25,inter:10,cripto:5};
+    else if(score<55) alloc={fixa:45,var:30,inter:15,cripto:10};
+    else if(score<75) alloc={fixa:35,var:30,inter:15,cripto:20};
+    else alloc={fixa:20,var:30,inter:15,cripto:35};
+  }
+
+  // FIRE Monte Carlo simplificado
+  const r = (score>75?0.15:score>55?0.12:score>30?0.09:0.07)/12;
+  let v=pat,m=0;
+  const meta=dp*25*12;
+  while(v<meta&&m<600){v=v*(1+r)+ap;m++;}
+  const anos=m/12;
+  const p90=anos*1.45;
+  const prob=Math.min(95,Math.max(40,Math.round(75+(score-50)*0.2)));
+
+  // Salvar no state
+  Object.assign(S,{score,perfil,patrimonio:pat,aporte:ap,desp:dp,horizonte:hor,cripto,alloc});
+  S.fireAnos=anos; S.fireP90=p90; S.fireProb=prob; S.fireMeta=meta;
+
+  // Atualizar UI step 6
+  document.getElementById('ob-score-num').textContent=score;
+  document.getElementById('ob-score-perfil').textContent=perfil;
+  document.getElementById('ob-score-sub').textContent=`Sharpe histórico esperado: ${sharpe} · Sigma: ${score>75?'22%':score>55?'18%':'14%'}`;
+  document.getElementById('ob-sc-anos').textContent=anos.toFixed(1)+'a';
+  document.getElementById('ob-sc-meta').textContent='R$'+Math.round(meta/1000)+'k';
+  document.getElementById('ob-sc-prob').textContent=prob+'%';
+
+  const colors={fixa:'#7C3AED',var:'#2563EB',inter:'#059669',cripto:'#D97706'};
+  const names={fixa:'Renda Fixa (Selic 10,5%)',var:'Renda Variável (IBOV)',inter:'Internacional (ETFs)',cripto:'Cripto (BTC/ETH staking)'};
+  let html='';
+  for(const k of['fixa','var','inter','cripto']){
+    if(alloc[k]===0) continue;
+    html+=`<div class="ob-alloc-row">
+      <div class="ob-alloc-dot" style="background:${colors[k]}"></div>
+      <div class="ob-alloc-name">${names[k]}</div>
+      <div class="ob-alloc-track"><div class="ob-alloc-fill" style="width:${alloc[k]}%;background:${colors[k]}"></div></div>
+      <div class="ob-alloc-pct">${alloc[k]}%</div>
+    </div>`;
+  }
+  document.getElementById('ob-alloc-rows').innerHTML=html;
+}
+
+function launchApp(){
+  document.getElementById('onboarding').style.display='none';
+  const app = document.getElementById('app');
+  app.style.display='flex';
+  app.classList.add('visible');
+  initApp();
+}
+
+// ─── APP ─────────────────────────────────────────────────────────────────────
+const MONTHS=['Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez','Jan','Fev','Mar'];
+const PUR='#7C3AED',BLU='#2563EB',GRN='#059669',AMB='#D97706',RED='#DC2626',GRY='#CBD5E1';
+
+function initApp(){
+  // Métricas
+  const pat=S.patrimonio, ap=S.aporte, desp=S.desp;
+  const meta=desp*25*12;
+  const pct=Math.min(100,Math.round(pat/meta*100));
+
+  document.getElementById('mc-pat').textContent='R$'+pat.toLocaleString('pt-BR');
+  document.getElementById('mc-aporte').textContent='R$'+ap.toLocaleString('pt-BR');
+  document.getElementById('mc-score').textContent=S.score+'/100';
+  document.getElementById('mc-score-label').textContent=S.perfil;
+  document.getElementById('tb-risk-chip').textContent='Perfil: '+S.perfil;
+
+  // FIRE widget sidebar
+  document.getElementById('fw-pct').textContent=pct+'%';
+  document.getElementById('fw-bar').style.width=pct+'%';
+  document.getElementById('fw-sub').textContent='R$'+Math.round(pat/1000)+'k de R$'+Math.round(meta/1000)+'k';
+
+  // FIRE dashboard
+  document.getElementById('dash-fire-bar').style.width=pct+'%';
+  document.getElementById('dash-fire-atual').textContent='R$'+Math.round(pat/1000)+'k atual';
+  document.getElementById('dash-fire-pct').textContent=pct+'% completo';
+  document.getElementById('dash-fire-meta').textContent='Meta: R$'+Math.round(meta/1000)+'k';
+  document.getElementById('dash-fire-badge').textContent=S.fireAnos.toFixed(1)+' anos';
+  document.getElementById('fsg-pat').textContent='R$'+Math.round(pat/1000)+'k';
+  document.getElementById('fsg-p90').textContent=S.fireP90.toFixed(1)+'a';
+  document.getElementById('fsg-prob').textContent=S.fireProb+'%';
+
+  // Portfolio métricas
+  document.getElementById('pf-custo').textContent='R$'+Math.round(pat*0.8/1000)+'k';
+  document.getElementById('pf-atual').textContent='R$'+Math.round(pat/1000)+'k';
+  const ganho=Math.round(pat*0.2);
+  document.getElementById('pf-ganho').textContent='↑ +R$'+ganho.toLocaleString('pt-BR');
+
+  // Alocação dashboard
+  const colors={fixa:PUR,var:BLU,inter:GRN,cripto:AMB};
+  const names={fixa:'Renda Fixa',var:'Renda Variável',inter:'Internacional',cripto:'Cripto'};
+  let html='';
+  for(const k of['fixa','var','inter','cripto']){
+    if((S.alloc[k]||0)===0) continue;
+    html+=`<div class="alloc-row">
+      <div class="alloc-dot" style="background:${colors[k]}"></div>
+      <div class="alloc-name">${names[k]}</div>
+      <div class="alloc-track"><div class="alloc-fill" style="width:${S.alloc[k]}%;background:${colors[k]}"></div></div>
+      <div class="alloc-pct">${S.alloc[k]}%</div>
+    </div>`;
+  }
+  document.getElementById('dash-alloc').innerHTML=html;
+
+  // Portfolio table
+  const assets=[
+    {s:'B',name:'BOVA11',tipo:'ETF B3',qtd:'220',preco:'R$128,40',total:28248,ret:'+14,2%',pct:11.4,bg:'#EDE9FE',c:'#5B21B6'},
+    {s:'T',name:'Tesouro IPCA+',tipo:'Renda Fixa',qtd:'—',preco:'IPCA+6,2%',total:74000,ret:'+18,8%',pct:29.9,bg:'#DBEAFE',c:'#1D4ED8'},
+    {s:'₿',name:'Bitcoin',tipo:'Cripto',qtd:'0,31',preco:'R$521k',total:31500,ret:'+82,4%',pct:12.7,bg:'#FEF3C7',c:'#92400E'},
+    {s:'I',name:'IVVB11',tipo:'ETF S&P500',qtd:'180',preco:'R$284,90',total:51282,ret:'+22,1%',pct:20.7,bg:'#D1FAE5',c:'#065F46'},
+    {s:'H',name:'HGLG11',tipo:'FII',qtd:'95',preco:'R$143,20',total:13604,ret:'−2,8%',pct:5.5,bg:'#FEE2E2',c:'#991B1B'},
+    {s:'C',name:'CDB 115% CDI',tipo:'Renda Fixa',qtd:'—',preco:'115% CDI',total:48500,ret:'+12,1%',pct:19.6,bg:'#EDE9FE',c:'#5B21B6'},
+  ];
+  let tb='';
+  for(const a of assets){
+    const isNeg=a.ret.startsWith('−');
+    tb+=`<tr>
+      <td><div class="asset-pill"><div class="asset-icon" style="background:${a.bg};color:${a.c}">${a.s}</div>${a.name}</div></td>
+      <td>${a.tipo}</td><td>${a.qtd}</td><td>${a.preco}</td>
+      <td style="font-weight:700;color:var(--t)">R$${a.total.toLocaleString('pt-BR')}</td>
+      <td class="${isNeg?'dn':'up'}">${a.ret}</td>
+      <td>${a.pct}%</td>
+    </tr>`;
+  }
+  document.getElementById('portfolio-tbody').innerHTML=tb;
+
+  // FIRE sliders - setar com valores do onboarding
+  setSlider('fire-d', S.desp, 'fire-d-v', 'R$', '');
+  setSlider('fire-a', S.aporte, 'fire-a-v', 'R$', '');
+  setSlider('fire-p', S.patrimonio, 'fire-p-v', 'R$', '');
+  document.getElementById('fire-r').value=12;
+  document.getElementById('fire-r-v').textContent='12%';
+  uFire();
+
+  // Simulador sliders
+  setSlider('si', S.patrimonio, 'si-v', 'R$', '');
+  setSlider('sa', S.aporte, 'sa-v', 'R$', '');
+  document.getElementById('sh').value=S.horizonte;
+  document.getElementById('sh-v').textContent=S.horizonte+' anos';
+  uSim();
+
+  // Charts
+  initCharts();
+
+  // Init slider bg
+  document.querySelectorAll('input[type=range]').forEach(updateSliderBg);
+}
+
+function setSlider(id, val, labelId, prefix, suffix){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.value = Math.min(el.max, Math.max(el.min, val));
+  document.getElementById(labelId).textContent = prefix + val.toLocaleString('pt-BR') + suffix;
+  updateSliderBg(el);
+}
+
+function updateSliderBg(el){
+  const min=parseFloat(el.min),max=parseFloat(el.max),v=parseFloat(el.value);
+  const pct=((v-min)/(max-min)*100).toFixed(1)+'%';
+  el.style.setProperty('--pct', pct);
+  el.style.background=`linear-gradient(90deg, #7C3AED ${pct}, #E2E8F0 ${pct})`;
+}
+
+// ─── FIRE CALC ──────────────────────────────────────────────────────────────
+function uFire(){
+  const d=+document.getElementById('fire-d').value;
+  const a=+document.getElementById('fire-a').value;
+  const r=+document.getElementById('fire-r').value;
+  const p=+document.getElementById('fire-p').value;
+  document.getElementById('fire-d-v').textContent='R$'+d.toLocaleString('pt-BR');
+  document.getElementById('fire-a-v').textContent='R$'+a.toLocaleString('pt-BR');
+  document.getElementById('fire-r-v').textContent=r.toFixed(1)+'%';
+  document.getElementById('fire-p-v').textContent='R$'+p.toLocaleString('pt-BR');
+
+  // Monte Carlo simplificado: mu=r/12, sigma=0.18/Math.sqrt(12)
+  const mu=r/100/12, sigma=0.18/Math.sqrt(12);
+  const meta=d*25*12;
+  // p50: path direto
+  let v=p,m=0;
+  while(v<meta&&m<600){v=v*(1+mu)+a;m++;}
+  const anos=m/12;
+  const p90=anos*1.45;
+  const prob=Math.min(95,Math.max(40,Math.round(80+(r-12)*1.5)));
+  const pct=Math.min(100,Math.round(p/meta*100));
+  const renda=Math.round(meta*0.04/12);
+
+  document.getElementById('fire-anos-big').textContent=anos>0?anos.toFixed(1)+' anos':'< 1 ano';
+  document.getElementById('fire-prob-big').textContent=prob+'%';
+  document.getElementById('fire-meta-v').textContent='R$'+Math.round(meta/1000)+'k';
+  document.getElementById('fire-p90-v').textContent=p90.toFixed(1)+'a';
+  document.getElementById('fire-prog-v').textContent=pct+'%';
+  document.getElementById('fire-renda-v').textContent='R$'+renda.toLocaleString('pt-BR')+'/mês';
+
+  // Update projection chart
+  if(S.charts.fireProj){
+    const L=Array.from({length:21},(_,i)=>2026+i);
+    S.charts.fireProj.data.labels=L;
+    S.charts.fireProj.data.datasets[0].data=genPath(p,a,r/100*1.5,20);
+    S.charts.fireProj.data.datasets[1].data=genPath(p,a,r/100,20);
+    S.charts.fireProj.data.datasets[2].data=genPath(p,a,r/100*0.55,20);
+    S.charts.fireProj.update();
+  }
+  updateSliderBg(document.getElementById('fire-d'));
+  updateSliderBg(document.getElementById('fire-a'));
+  updateSliderBg(document.getElementById('fire-r'));
+  updateSliderBg(document.getElementById('fire-p'));
+}
+
+function genPath(ini,ap,r,anos){
+  let v=ini,arr=[v];
+  for(let i=0;i<anos;i++){v=v*(1+r)+ap*12;arr.push(Math.round(Math.max(0,v)));}
+  return arr;
+}
+
+// ─── SIMULADOR ──────────────────────────────────────────────────────────────
+function uSim(){
+  const ini=+document.getElementById('si').value;
+  const ap=+document.getElementById('sa').value;
+  const r=+document.getElementById('sr').value;
+  const y=+document.getElementById('sh').value;
+  document.getElementById('si-v').textContent='R$'+ini.toLocaleString('pt-BR');
+  document.getElementById('sa-v').textContent='R$'+ap.toLocaleString('pt-BR');
+  document.getElementById('sr-v').textContent=r.toFixed(1)+'%';
+  document.getElementById('sh-v').textContent=y+' anos';
+
+  let v=ini;
+  const rm=r/100/12;
+  for(let i=0;i<y*12;i++) v=v*(1+rm)+ap;
+  const final=Math.round(v);
+  const aportado=Math.round(ini+ap*12*y);
+  const juros=final-aportado;
+  const multi=(aportado>0?(final/aportado):0).toFixed(1);
+  const pctJu=aportado>0?Math.round(juros/final*100):0;
+
+  document.getElementById('sim-final').textContent='R$'+final.toLocaleString('pt-BR');
+  document.getElementById('sim-multi').textContent=multi+'× o capital investido';
+  document.getElementById('sim-ap').textContent='R$'+Math.round(aportado/1000)+'k';
+  document.getElementById('sim-ju').textContent='R$'+Math.round(Math.max(0,juros)/1000)+'k';
+  document.getElementById('sim-pct-ju').textContent=pctJu+'%';
+  document.getElementById('sim-cdi').textContent=(r*0.95).toFixed(1)+'%';
+
+  if(S.charts.sim){
+    const L=Array.from({length:Math.round(y)+1},(_,i)=>2026+i);
+    S.charts.sim.data.labels=L;
+    S.charts.sim.data.datasets[0].data=Array.from({length:Math.round(y)+1},(_,i)=>Math.round(ini+ap*12*i));
+    S.charts.sim.data.datasets[1].data=Array.from({length:Math.round(y)+1},(_,i)=>{
+      let vv=ini; const r2=r/100/12;
+      for(let j=0;j<i*12;j++) vv=vv*(1+r2)+ap;
+      return Math.max(0,Math.round(vv-(ini+ap*12*i)));
+    });
+    S.charts.sim.update();
+  }
+}
+
+// ─── CHARTS ─────────────────────────────────────────────────────────────────
+function initCharts(){
+  const patrimonioData=[Math.round(S.patrimonio*0.72),Math.round(S.patrimonio*0.74),
+    Math.round(S.patrimonio*0.76),Math.round(S.patrimonio*0.78),
+    Math.round(S.patrimonio*0.80),Math.round(S.patrimonio*0.83),
+    Math.round(S.patrimonio*0.85),Math.round(S.patrimonio*0.88),
+    Math.round(S.patrimonio*0.91),Math.round(S.patrimonio*0.95),
+    Math.round(S.patrimonio*0.97),S.patrimonio];
+
+  // Chart patrimônio
+  const c1=document.getElementById('ch-patrim');
+  if(c1) S.charts.patrim=new Chart(c1,{type:'line',data:{labels:MONTHS,datasets:[{
+    data:patrimonioData,borderColor:PUR,backgroundColor:'rgba(124,58,237,0.07)',
+    fill:true,tension:0.45,borderWidth:2.5,pointRadius:0,pointHoverRadius:5,
+    pointHoverBackgroundColor:PUR
+  }]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{callbacks:{label:c=>'R$'+c.parsed.y.toLocaleString('pt-BR')}}},
+    scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10}}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10},
+        callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+
+  // Chart benchmark
+  const c2=document.getElementById('ch-bench');
+  if(c2) S.charts.bench=new Chart(c2,{type:'line',data:{labels:MONTHS,datasets:[
+    {data:[100,103,105,107,110,112,115,119,122,126,129,132],borderColor:PUR,borderWidth:2.5,tension:0.4,pointRadius:0,fill:false},
+    {data:[100,101,99,102,104,103,105,107,106,109,111,112],borderColor:BLU,borderWidth:1.5,tension:0.4,pointRadius:0,fill:false,borderDash:[4,3]},
+    {data:[100,100.9,101.8,102.7,103.6,104.5,105.4,106.3,107.2,108.1,109,110],borderColor:GRY,borderWidth:1.5,tension:0.1,pointRadius:0,fill:false,borderDash:[2,4]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10}}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10}}}}}});
+
+  // Chart FIRE projection
+  const c3=document.getElementById('ch-fire-proj');
+  const L=Array.from({length:21},(_,i)=>2026+i);
+  if(c3) S.charts.fireProj=new Chart(c3,{type:'line',data:{labels:L,datasets:[
+    {data:genPath(S.patrimonio,S.aporte,0.18,20),borderColor:GRN,borderWidth:2,tension:0.4,pointRadius:0,fill:false},
+    {data:genPath(S.patrimonio,S.aporte,0.12,20),borderColor:PUR,borderWidth:2.5,tension:0.4,pointRadius:0,fill:false},
+    {data:genPath(S.patrimonio,S.aporte,0.066,20),borderColor:RED,borderWidth:1.5,tension:0.4,pointRadius:0,fill:false,borderDash:[5,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10}}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10},
+        callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+
+  // Chart simulador
+  const c4=document.getElementById('ch-sim');
+  const L2=Array.from({length:16},(_,i)=>2026+i);
+  if(c4){
+    const r=12/100/12;
+    S.charts.sim=new Chart(c4,{type:'bar',data:{labels:L2,datasets:[
+      {label:'Capital',data:Array.from({length:16},(_,i)=>Math.round(S.patrimonio+S.aporte*12*i)),
+        backgroundColor:'rgba(124,58,237,0.15)',borderRadius:4},
+      {label:'Juros',data:Array.from({length:16},(_,i)=>{
+        let v=S.patrimonio; for(let j=0;j<i*12;j++) v=v*(1+r)+S.aporte;
+        return Math.max(0,Math.round(v-(S.patrimonio+S.aporte*12*i)));
+      }),backgroundColor:PUR,borderRadius:4}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:GRY,font:{size:10}}},
+        y:{stacked:true,grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:GRY,font:{size:10},
+          callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+  }
+}
+
+// ─── NAVEGAÇÃO ───────────────────────────────────────────────────────────────
+const pageTitles={
+  dashboard:['Início','Visão geral do seu patrimônio'],
+  portfolio:['Portfólio','Ativos em carteira · yfinance 2026'],
+  fire:['FIRE Tracker','Financial Independence · Monte Carlo 10k sims'],
+  sim:['Simulador','Juros compostos · Cálculo exato'],
+  robos:['Robôs & Algoritmo Genético','Evolução darwiniana · Crossover · Mutação · Fitness = Sortino'],
+  ia:['IA Advisor','Kelly Criterion · Algoritmo Genético · Stress Test']
+};
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  const [t,s]=pageTitles[id]||['',''];
+  document.getElementById('tb-title').textContent=t;
+  document.getElementById('tb-sub').textContent=s;
+}
+
+};
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  const [t,s]=pageTitles[id]||['',''];
+  document.getElementById('tb-title').textContent=t;
+  document.getElementById('tb-sub').textContent=s;
+  if(id==='robos' && !GA.chartInited) gaInitChart();
+}
+
+// ─── ALGORITMO GENÉTICO + ROBÔS ──────────────────────────────────────────────
+const GENES_K=['renda_fixa','renda_var','internacional','cripto'];
+const GENE_C={'renda_fixa':'#7C3AED','renda_var':'#2563EB','internacional':'#059669','cripto':'#D97706'};
+const GENE_N={'renda_fixa':'RF','renda_var':'RV','internacional':'INT','cripto':'BTC'};
+const RET_K={'renda_fixa':.105,'renda_var':.12,'internacional':.14,'cripto':.45};
+const VOL_K={'renda_fixa':.03,'renda_var':.20,'internacional':.15,'cripto':.70};
+const RF_K=.105/12;
+const R_EMOJI=['🤖','🦾','🧬','⚡','🔬','🧪','🛸','💎','🔮','🌀','🦅','🐉','🎯','🔥','🧠','🌊'];
+const R_PFX=['Alpha','Beta','Gamma','Delta','Sigma','Omega','Nova','Zeta','Titan','Nexus','Apex','Flux'];
+
+const GA={
+  robots:[],selected:[],running:false,interval:null,
+  gen:0,maxGen:50,history:[],chartInited:false,chart:null
+};
+
+function gaRnd(a,b){return Math.random()*(b-a)+a;}
+function gaRndI(a,b){return Math.floor(gaRnd(a,b+1));}
+
+function gaNorm(g){
+  const t=GENES_K.reduce((s,k)=>s+(g[k]||0),0);
+  if(!t) return g;
+  const r={};
+  GENES_K.forEach(k=>r[k]=Math.max(0,Math.round((g[k]||0)/t*1000)/10));
+  return r;
+}
+
+function gaFitness(genes){
+  const mu=GENES_K.reduce((s,k)=>s+(genes[k]||0)/100*RET_K[k],0);
+  const sig=Math.sqrt(GENES_K.reduce((s,k)=>s+Math.pow((genes[k]||0)/100,2)*Math.pow(VOL_K[k],2),0))||.001;
+  const dd=sig*.75;
+  let sort=(mu-RF_K*12)/dd;
+  const bs=parseFloat(document.getElementById('gr-bs').value)||.5;
+  if((genes['cripto']||0)>40) sort-=bs;
+  if((genes['cripto']||0)>60) sort-=bs*1.5;
+  return Math.max(0,sort);
+}
+
+function gaCAGR(g){return Math.round(GENES_K.reduce((s,k)=>s+(g[k]||0)/100*RET_K[k],0)*1000)/10;}
+
+function gaMakeRobot(i,genes){
+  if(!genes){
+    const w=GENES_K.map(()=>gaRnd(5,50));
+    const t=w.reduce((a,b)=>a+b,0);
+    genes={};
+    GENES_K.forEach((k,j)=>genes[k]=Math.round(w[j]/t*1000)/10);
+  }
+  genes=gaNorm(genes);
+  const fit=gaFitness(genes);
+  return{
+    id:i,emoji:R_EMOJI[i%R_EMOJI.length],
+    name:R_PFX[i%R_PFX.length]+'-'+(1000+i),
+    strain:'v'+(gaRndI(1,999))+'.'+gaRndI(0,9),
+    genes,fit:Math.round(fit*1000)/1000,
+    cagr:gaCAGR(genes),
+    status:i<3?'elite':i<5?'mutante':i>6?'extinto':'normal',
+    gen:0
+  };
+}
+
+function gaInitRobots(){
+  GA.robots=[];
+  const seeds=[
+    {renda_fixa:35,renda_var:30,internacional:15,cripto:20},
+    {renda_fixa:50,renda_var:30,internacional:15,cripto:5},
+    {renda_fixa:20,renda_var:35,internacional:15,cripto:30},
+    {renda_fixa:60,renda_var:25,internacional:15,cripto:0},
+  ];
+  for(let i=0;i<8;i++) GA.robots.push(gaMakeRobot(i, i<seeds.length?{...seeds[i]}:null));
+  gaRenderRobots();
+  gaRenderLeaderboard();
+  gaUpdateTopMetrics();
+}
+
+function gaRenderRobots(){
+  const grid=document.getElementById('ga-robots-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  GA.robots.forEach((r,i)=>{
+    const isSel=GA.selected.includes(i);
+    const div=document.createElement('div');
+    div.className='robot-card '+r.status+(isSel?' selected':'');
+    div.onclick=()=>gaSelectRobot(i);
+    const dna=GENES_K.map(k=>`<div class="dna-seg" style="width:${r.genes[k]||0}%;background:${GENE_C[k]}"></div>`).join('');
+    const statusBadge=r.status==='elite'?`<span class="tb-chip chip-g" style="font-size:9px;padding:2px 6px;">élite</span>`:
+      r.status==='mutante'?`<span class="tb-chip chip-a" style="font-size:9px;padding:2px 6px;">mutante</span>`:
+      r.status==='extinto'?`<span class="tb-chip" style="font-size:9px;padding:2px 6px;background:var(--rl);color:#991B1B;">extinto</span>`:'';
+    div.innerHTML=`
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+        <div class="robot-avatar" style="background:${r.status==='elite'?'#D1FAE5':r.status==='mutante'?'#FEF3C7':r.status==='extinto'?'#FEE2E2':'#EDE9FE'}">${r.emoji}</div>
+        ${statusBadge}
+      </div>
+      <div class="robot-name">${r.name}</div>
+      <div class="robot-strain">${r.strain}</div>
+      <div class="robot-bar-bg"><div class="robot-bar-fill" style="width:${Math.min(100,r.fit*45)}%;background:${r.status==='elite'?'#059669':r.status==='mutante'?'#D97706':'#7C3AED'}"></div></div>
+      <div class="robot-stat-row"><span>Sortino</span><strong>${r.fit.toFixed(3)}</strong></div>
+      <div class="robot-stat-row"><span>CAGR</span><strong>${r.cagr}%</strong></div>
+      <div class="alloc-dna">${dna}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function gaSelectRobot(i){
+  if(GA.selected.includes(i)) GA.selected=GA.selected.filter(x=>x!==i);
+  else if(GA.selected.length<2) GA.selected.push(i);
+  else GA.selected=[i];
+  gaRenderRobots();
+  gaUpdateCrossPanel();
+  gaShowDetail(i);
+}
+
+function gaUpdateCrossPanel(){
+  const btn=document.getElementById('ga-btn-cross');
+  [0,1].forEach(pi=>{
+    const box=document.getElementById('cp'+(pi+1));
+    if(!box) return;
+    if(GA.selected.length>pi){
+      const r=GA.robots[GA.selected[pi]];
+      const dna=GENES_K.map(k=>`<span class="dna-gene" style="background:${GENE_C[k]}22;color:${GENE_C[k]}">${GENE_N[k]}${Math.round(r.genes[k]||0)}%</span>`).join('');
+      box.innerHTML=`<div style="font-size:11px;color:var(--t3);margin-bottom:4px;">Pai ${pi+1}</div><div style="font-size:26px;">${r.emoji}</div><div style="font-size:11px;font-weight:700;margin-top:4px;">${r.name}</div><div class="cross-dna" style="margin-top:6px;">${dna}</div>`;
+    }
+  });
+  if(btn) btn.disabled=GA.selected.length<2;
+}
+
+function gaCross(){
+  if(GA.selected.length<2) return;
+  const p1=GA.robots[GA.selected[0]],p2=GA.robots[GA.selected[1]];
+  const mut=parseFloat(document.getElementById('gr-mut').value)/100;
+  const g={};
+  GENES_K.forEach(k=>{
+    let v=Math.random()<.5?(p1.genes[k]||0):(p2.genes[k]||0);
+    if(Math.random()<mut) v=Math.max(0,v+gaRnd(-15,15));
+    g[k]=v;
+  });
+  const normed=gaNorm(g);
+  const fit=gaFitness(normed);
+  const isMutant=fit>Math.max(p1.fit,p2.fit)*1.04;
+  const emoji=R_EMOJI[gaRndI(0,R_EMOJI.length-1)];
+  const name=R_PFX[gaRndI(0,R_PFX.length-1)]+'-'+gaRndI(1000,9999);
+  const dna=GENES_K.map(k=>`<span class="dna-gene" style="background:${GENE_C[k]}22;color:${GENE_C[k]}">${GENE_N[k]}${Math.round(normed[k]||0)}%</span>`).join('');
+  document.getElementById('cf-emoji').textContent=emoji;
+  document.getElementById('cf-name').textContent=name+' · '+fit.toFixed(3)+(isMutant?' 🧬 nova strain!':'');
+  document.getElementById('cf-dna').innerHTML=dna;
+  const cf=document.getElementById('cf');
+  cf.style.borderColor=isMutant?'#D97706':'var(--p)';
+  cf.style.background=isMutant?'#FEF3C7':'var(--s)';
+  if(isMutant){
+    const novo={id:GA.robots.length,emoji,name,strain:'v'+(GA.gen+1)+'.0',genes:normed,fit:Math.round(fit*1000)/1000,cagr:gaCAGR(normed),status:'mutante',gen:GA.gen};
+    GA.robots.push(novo);
+    gaRenderRobots();
+    gaRenderLeaderboard();
+    gaUpdateTopMetrics();
+  }
+}
+
+function gaShowDetail(i){
+  const r=GA.robots[i];if(!r) return;
+  document.getElementById('ga-detail-card').style.display='block';
+  document.getElementById('ga-empty-card').style.display='none';
+  document.getElementById('gd-title').textContent=r.emoji+' '+r.name;
+  document.getElementById('gd-strain').textContent='Strain '+r.strain+' · Geração '+r.gen+' · '+r.status;
+  let alloc='';
+  GENES_K.forEach(k=>{
+    const p=Math.round(r.genes[k]||0);
+    alloc+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="width:10px;height:10px;border-radius:2px;background:${GENE_C[k]};flex-shrink:0;"></div>
+      <div style="flex:1;font-size:12px;color:var(--t2);">${k.replace('_',' ')}</div>
+      <div style="width:90px;height:4px;background:var(--bg);border-radius:2px;"><div style="width:${p}%;height:4px;border-radius:2px;background:${GENE_C[k]};"></div></div>
+      <div style="font-size:12px;font-weight:700;font-family:var(--mo);min-width:30px;text-align:right;">${p}%</div>
+    </div>`;
+  });
+  document.getElementById('gd-alloc').innerHTML=alloc;
+  document.getElementById('gd-stats').innerHTML=[
+    ['Sortino',r.fit.toFixed(3),'var(--p)'],
+    ['CAGR',r.cagr+'%','var(--g)'],
+    ['Sharpe',(r.fit*.82).toFixed(3),'var(--b)'],
+    ['Risco',(r.genes['cripto']||0)>30?'Alto':'Moderado',(r.genes['cripto']||0)>30?'var(--a)':'var(--g)'],
+  ].map(([l,v,c])=>`<div class="fire-stat"><div class="fsl">${l}</div><div class="fsv" style="color:${c};">${v}</div></div>`).join('');
+}
+
+function gaRenderLeaderboard(){
+  const lb=document.getElementById('ga-leaderboard');if(!lb) return;
+  const sorted=[...GA.robots].sort((a,b)=>b.fit-a.fit).slice(0,5);
+  const rankClass=['gold','silver','bronze','',''];
+  const rankLabel=['#1','#2','#3','#4','#5'];
+  lb.innerHTML=sorted.map((r,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rankClass[i]}">${rankLabel[i]}</div>
+      <div style="font-size:18px;">${r.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:var(--t);">${r.name}</div>
+        <div style="font-size:10px;color:var(--t3);font-family:var(--mo);">${r.strain} · CAGR ${r.cagr}%</div>
+      </div>
+      <div style="font-size:13px;font-weight:800;color:var(--p);font-family:var(--mo);">${r.fit.toFixed(3)}</div>
+    </div>`).join('');
+}
+
+function gaUpdateTopMetrics(){
+  const best=GA.robots.reduce((m,r)=>r.fit>m.fit?r:m,GA.robots[0]);
+  if(!best) return;
+  document.getElementById('rc-ativos').textContent=GA.robots.filter(r=>r.status!=='extinto').length;
+  document.getElementById('rc-sortino').textContent=best.fit.toFixed(3);
+  document.getElementById('rc-gen').textContent=GA.gen;
+  document.getElementById('rc-cagr').textContent=best.cagr+'%';
+}
+
+function gaInitChart(){
+  const ctx=document.getElementById('ch-ga-fitness');if(!ctx) return;
+  GA.chart=new Chart(ctx,{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Melhor',data:[],borderColor:'#7C3AED',borderWidth:2.5,tension:.4,pointRadius:0,fill:false},
+      {label:'Média',data:[],borderColor:'#CBD5E1',borderWidth:1.5,tension:.4,pointRadius:0,fill:false,borderDash:[4,3]},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#94A3B8',font:{size:10},maxTicksLimit:10}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#94A3B8',font:{size:10}},min:0}
+      },animation:{duration:0}}
+  });
+  GA.chartInited=true;
+}
+
+function gaStart(){
+  if(GA.running){gaStop();return;}
+  if(!GA.chartInited) gaInitChart();
+  GA.running=true;
+  document.getElementById('ga-btn-run').textContent='⏸ Pausar';
+  document.getElementById('ga-btn-run').classList.remove('btn-primary');
+  document.getElementById('ga-btn-step').disabled=false;
+  document.getElementById('ga-dot').style.background='var(--g)';
+  GA.interval=setInterval(gaStep,200);
+}
+
+function gaStop(){
+  GA.running=false;clearInterval(GA.interval);
+  document.getElementById('ga-btn-run').textContent='▶ Continuar';
+  document.getElementById('ga-btn-run').classList.add('btn-primary');
+  document.getElementById('ga-dot').style.background='var(--a)';
+  document.getElementById('ga-txt').textContent='Pausado na geração '+GA.gen;
+}
+
+function gaStep(){
+  if(GA.gen>=GA.maxGen){gaStop();document.getElementById('ga-txt').textContent='Evolução concluída! 🏆';return;}
+  GA.gen++;
+  const mut=parseFloat(document.getElementById('gr-mut').value)/100;
+  GA.robots.sort((a,b)=>b.fit-a.fit);
+  const elite=GA.robots.slice(0,2).map(r=>({...r,status:'elite',gen:GA.gen}));
+  const nova=[...elite];
+  while(nova.length<8){
+    const p1=GA.robots[gaRndI(0,Math.min(4,GA.robots.length-1))];
+    const p2=GA.robots[gaRndI(0,Math.min(4,GA.robots.length-1))];
+    const g={};
+    GENES_K.forEach(k=>{
+      let v=Math.random()<.5?(p1.genes[k]||0):(p2.genes[k]||0);
+      if(Math.random()<mut) v=Math.max(0,v+gaRnd(-12,12));
+      g[k]=v;
+    });
+    const normed=gaNorm(g);
+    const fit=gaFitness(normed);
+    nova.push({id:nova.length,emoji:R_EMOJI[gaRndI(0,R_EMOJI.length-1)],
+      name:R_PFX[gaRndI(0,R_PFX.length-1)]+'-'+gaRndI(1000,9999),
+      strain:'v'+GA.gen+'.'+gaRndI(0,9),genes:normed,
+      fit:Math.round(fit*1000)/1000,cagr:gaCAGR(normed),
+      status:nova.length<3?'elite':Math.random()<.12?'mutante':nova.length>6?'extinto':'normal',
+      gen:GA.gen});
+  }
+  GA.robots=nova.slice(0,8);
+  const best=Math.max(...GA.robots.map(r=>r.fit));
+  const avg=Math.round(GA.robots.reduce((s,r)=>s+r.fit,0)/GA.robots.length*1000)/1000;
+  const bestObj=GA.robots.reduce((m,r)=>r.fit>m.fit?r:m,GA.robots[0]);
+  const prevBest=GA.history.length>4?GA.history[GA.history.length-5].best:0;
+  const isNova=best>prevBest*1.03;
+  GA.history.push({gen:GA.gen,best:Math.round(best*1000)/1000,avg});
+  if(GA.chart){
+    GA.chart.data.labels.push('G'+GA.gen);
+    GA.chart.data.datasets[0].data.push(Math.round(best*1000)/1000);
+    GA.chart.data.datasets[1].data.push(avg);
+    GA.chart.update();
+  }
+  document.getElementById('gm-s').textContent=(Math.round(best*1000)/1000).toFixed(3);
+  document.getElementById('gm-c').textContent=bestObj.cagr+'%';
+  document.getElementById('gm-d').textContent=Math.round(GA.robots.reduce((s,r)=>s+(r.genes['renda_var']||0),0)/GA.robots.length)+'%RV';
+  document.getElementById('gm-st').textContent=isNova?'Nova! 🧬':'Estável';
+  document.getElementById('gm-st').style.color=isNova?'var(--g)':'var(--t3)';
+  document.getElementById('ga-txt').textContent=isNova?'Nova strain detectada — fitness +3%!':'Evoluindo população...';
+  document.getElementById('ga-gen-txt').textContent='Geração '+GA.gen+' / '+GA.maxGen;
+  gaRenderRobots();
+  gaRenderLeaderboard();
+  gaUpdateTopMetrics();
+}
+
+function gaReset(){
+  gaStop();
+  GA.gen=0;GA.history=[];GA.selected=[];GA.running=false;
+  if(GA.chart){GA.chart.data.labels=[];GA.chart.data.datasets.forEach(d=>d.data=[]);GA.chart.update();}
+  ['gm-s','gm-c','gm-d','gm-st','rc-sortino','rc-cagr'].forEach(id=>{const el=document.getElementById(id);if(el) el.textContent='—';});
+  document.getElementById('ga-gen-txt').textContent='Geração 0 / 50';
+  document.getElementById('ga-txt').textContent='Aguardando início';
+  document.getElementById('ga-dot').style.background='var(--t4)';
+  document.getElementById('ga-btn-run').textContent='▶ Iniciar evolução';
+  document.getElementById('ga-btn-run').classList.add('btn-primary');
+  document.getElementById('ga-btn-step').disabled=true;
+  document.getElementById('cf-emoji').textContent='?';
+  document.getElementById('cf-name').textContent='aguardando';
+  document.getElementById('cf-dna').innerHTML='';
+  document.getElementById('cf').style.borderColor='var(--p)';
+  document.getElementById('cf').style.background='var(--s)';
+  document.getElementById('ga-detail-card').style.display='none';
+  document.getElementById('ga-empty-card').style.display='block';
+  gaInitRobots();
+}
+
+// Init slider bg on load
+window.addEventListener('load',()=>{
+  document.querySelectorAll('input[type=range]').forEach(updateSliderBg);
+  gaInitRobots();
+});
+</script>
+</body>
+</html>

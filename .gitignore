@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Env files / secrets
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Node / React Native
+node_modules/
+
+# OS / Editor
+.DS_Store
+.vscode/
