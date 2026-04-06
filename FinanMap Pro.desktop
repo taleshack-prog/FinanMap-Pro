@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=FinanMap Pro v4
+Comment=Abrir backend + frontend com um clique
+Exec=bash -c 'cd "$HOME/Downloads/finanmap-v3" && bash start.sh'
+Icon=utilities-terminal
+Terminal=true
+Categories=Finance;
+StartupNotify=true

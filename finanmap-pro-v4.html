@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FinanMap Pro v4</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090b0f;--bg2:#0f1117;--bg3:#161920;--bg4:#1c1f27;--bg5:#22252e;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --text:#dde1ec;--t2:#8890a8;--t3:#525870;--t4:#2e3144;
+  --accent:#00d4aa;--accent2:#3b9eff;--accent3:#f59e0b;
+  --green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+  --rf:#8b5cf6;--rv:#3b9eff;--int:#10b981;--cri:#f59e0b;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);font-size:14px;}
+body{display:flex;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{width:224px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;}
+.sb-logo{padding:22px 18px 18px;border-bottom:1px solid var(--border);}
+.sb-logo-name{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:-.4px;}
+.sb-logo-name span{color:var(--accent);}
+.sb-logo-sub{font-family:var(--fm);font-size:9px;color:var(--t3);margin-top:3px;letter-spacing:1.2px;}
+.sb-nav{flex:1;padding:10px 8px;}
+.sb-section{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;padding:10px 10px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--t2);font-weight:400;transition:all .14s;margin-bottom:1px;border-left:2px solid transparent;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:rgba(0,212,170,.07);color:var(--accent);border-left-color:var(--accent);}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.sb-footer{padding:14px 16px;border-top:1px solid var(--border);}
+.api-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t3);}
+.api-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);}
+.api-dot.online{background:var(--green);}
+.api-dot.offline{background:var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.live{animation:blink 2s infinite;}
+
+/* ─── MAIN ─── */
+.main{margin-left:224px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:16px 28px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.page-title{font-family:var(--fh);font-size:19px;font-weight:700;}
+.page-sub{font-size:11px;color:var(--t3);margin-top:2px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.page{padding:24px 28px;display:none;}
+.page.active{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ─── BUTTONS ─── */
+.btn{padding:7px 15px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);font-family:var(--fb);font-size:12.5px;font-weight:500;cursor:pointer;color:var(--text);transition:all .14s;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--border3);background:var(--bg4);}
+.btn-primary{background:var(--accent);color:#000;border-color:var(--accent);}
+.btn-primary:hover{background:#00ba94;}
+.btn-ghost{background:rgba(0,212,170,.08);color:var(--accent);border-color:rgba(0,212,170,.2);}
+.btn-ghost:hover{background:rgba(0,212,170,.14);}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.2);}
+.btn-success{background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.2);}
+.btn-sm{padding:5px 11px;font-size:11.5px;}
+
+/* ─── CARDS & GRIDS ─── */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.grid32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:16px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px;}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.mc.purple::before{background:var(--purple);}
+.mc.green::before{background:var(--green);}
+.mc.amber::before{background:var(--accent3);}
+.mc.blue::before{background:var(--accent2);}
+.mc.teal::before{background:var(--accent);}
+.mc-l{font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.mc-v{font-size:20px;font-weight:700;font-family:var(--fm);color:var(--text);}
+.mc-s{font-size:11px;color:var(--t3);margin-top:5px;}
+.up{color:var(--green);font-weight:600;}
+.dn{color:var(--red);font-weight:600;}
+.sec{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;font-family:var(--fh);}
+.sec-sub{font-size:11px;color:var(--t3);margin-bottom:14px;}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600;font-family:var(--fm);}
+.b-green{background:rgba(16,185,129,.12);color:var(--green);}
+.b-red{background:rgba(239,68,68,.12);color:var(--red);}
+.b-amber{background:rgba(245,158,11,.12);color:var(--accent3);}
+.b-blue{background:rgba(59,158,255,.12);color:var(--accent2);}
+.b-purple{background:rgba(139,92,246,.12);color:var(--purple);}
+.b-teal{background:rgba(0,212,170,.12);color:var(--accent);}
+
+/* ─── ALLOC BARS ─── */
+.alloc-strip{display:flex;height:5px;border-radius:3px;overflow:hidden;gap:1px;}
+.alloc-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.alloc-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.alloc-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;flex:2;}
+.alloc-fill{height:4px;border-radius:2px;}
+
+/* ─── TABLE ─── */
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:var(--fm);}
+.data-table td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid var(--border);color:var(--t2);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(255,255,255,.02);}
+
+/* ─── FORMS ─── */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:8px 12px;border:1px solid var(--border2);border-radius:7px;font-size:13px;color:var(--text);background:var(--bg3);outline:none;font-family:var(--fb);transition:border .14s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field select option{background:var(--bg2);}
+.prefix-input{display:flex;align-items:center;border:1px solid var(--border2);border-radius:7px;overflow:hidden;background:var(--bg3);}
+.prefix-input span{padding:8px 12px;font-size:13px;color:var(--t3);font-weight:600;border-right:1px solid var(--border2);}
+.prefix-input input{border:none;flex:1;padding:8px 12px;font-size:13px;outline:none;background:transparent;color:var(--text);}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg5);outline:none;width:100%;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--bg5);border-radius:11px;cursor:pointer;transition:background .2s;border:1px solid var(--border2);}
+.toggle input:checked+.toggle-track{background:var(--green);border-color:var(--green);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none;}
+.toggle input:checked~.toggle-thumb{transform:translateX(18px);}
+
+/* ─── INDICATOR ROW ─── */
+.ind-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.ind-row:last-child{border-bottom:none;}
+.ind-label{font-size:12px;color:var(--t2);}
+.ind-val{font-size:13px;font-weight:700;font-family:var(--fm);color:var(--text);}
+
+/* ─── ROBOTS & GA ─── */
+.robot-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.robot-card{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px;cursor:pointer;transition:all .14s;border-left:3px solid var(--border2);}
+.robot-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+.robot-card.selected{border:2px solid var(--accent);background:rgba(0,212,170,.05);}
+.robot-card.elite{border-left-color:var(--green);}
+.robot-card.mutante{border-left-color:var(--accent3);}
+.robot-card.extinto{border-left-color:var(--red);opacity:.5;}
+.robot-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:7px;}
+.robot-name{font-size:12px;font-weight:700;margin-bottom:1px;}
+.robot-strain{font-size:9.5px;color:var(--t3);font-family:var(--fm);margin-bottom:7px;}
+.dna-strip{display:flex;height:4px;border-radius:2px;overflow:hidden;gap:1px;margin-bottom:5px;}
+.strat-genes{display:flex;gap:7px;margin-bottom:6px;}
+.strat-gene{font-size:9px;color:var(--t3);font-family:var(--fm);}
+.strat-badge{display:inline-flex;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;margin-bottom:5px;}
+.robot-metrics{display:flex;gap:4px;}
+.rm-item{flex:1;background:var(--bg4);border-radius:6px;padding:5px;}
+.rm-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;}
+.rm-val{font-size:11.5px;font-weight:700;font-family:var(--fm);}
+.s-swing{background:rgba(16,185,129,.15);color:var(--green);}
+.s-arbitragem{background:rgba(245,158,11,.15);color:var(--accent3);}
+.s-rebalanceamento{background:rgba(59,158,255,.15);color:var(--accent2);}
+.s-dividend{background:rgba(139,92,246,.15);color:var(--purple);}
+.s-stop{background:rgba(239,68,68,.15);color:var(--red);}
+.pill-group{display:flex;flex-wrap:wrap;gap:5px;}
+.pill{padding:4px 10px;border:1px solid var(--border2);border-radius:20px;font-size:11px;cursor:pointer;background:var(--bg3);color:var(--t2);transition:all .14s;}
+.pill.active{border-color:var(--accent);background:rgba(0,212,170,.1);color:var(--accent);}
+.ga-metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.ga-met{background:var(--bg3);border-radius:8px;padding:8px;}
+.ga-met-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+.ga-met-v{font-size:15px;font-weight:700;font-family:var(--fm);}
+.fitness-chart{height:55px;display:flex;align-items:flex-end;gap:2px;margin-bottom:10px;background:var(--bg3);border-radius:7px;padding:5px;}
+.fc-bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;}
+.fc-best{background:var(--accent);border-radius:1px 1px 0 0;}
+.fc-avg{background:var(--t4);border-radius:0;}
+.cross-box{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px;flex:1;text-align:center;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.cross-box.filho{border-color:var(--accent);}
+
+/* ─── FIRE ─── */
+.fire-progress{height:10px;background:var(--bg4);border-radius:5px;margin-bottom:7px;overflow:hidden;}
+.fire-fill{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--accent),var(--accent3));}
+.mc-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.scenario{padding:14px;border-radius:10px;text-align:center;}
+.sc-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;opacity:.8;}
+.sc-val{font-size:22px;font-weight:800;font-family:var(--fm);margin:4px 0;}
+.sc-sub{font-size:10px;opacity:.6;}
+
+/* ─── STRESS ─── */
+.stress-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.stress-card{border-radius:9px;padding:12px;}
+.stress-label{font-size:11px;font-weight:700;margin-bottom:4px;}
+.stress-val{font-size:19px;font-weight:800;font-family:var(--fm);}
+.stress-sub{font-size:10px;margin-top:3px;opacity:.7;}
+
+/* ─── HODL ─── */
+.hodl-item{display:flex;align-items:center;gap:12px;padding:11px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;margin-bottom:7px;}
+.hodl-lock-icon{width:34px;height:34px;background:rgba(239,68,68,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.hodl-free-icon{width:34px;height:34px;background:rgba(16,185,129,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.hodl-ticker{font-size:13px;font-weight:700;}
+.hodl-conta{font-size:11px;color:var(--t3);}
+
+/* ─── NOTIF ─── */
+.notif-item{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);}
+.notif-item:last-child{border-bottom:none;}
+.notif-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.notif-title{font-size:12.5px;font-weight:600;margin-bottom:2px;}
+.notif-sub{font-size:11px;color:var(--t3);}
+
+/* ─── MISC ─── */
+.sep{height:1px;background:var(--border);margin:.9rem 0;}
+.tag{padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:600;}
+.empty-state{text-align:center;padding:2rem;color:var(--t3);}
+.loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bg5);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.signal-badge{padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;}
+.sig-compra{background:rgba(16,185,129,.12);color:var(--green);}
+.sig-venda{background:rgba(239,68,68,.12);color:var(--red);}
+.sig-neutro{background:var(--bg4);color:var(--t2);}
+/* toast */
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:7px;}
+.toast-item{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:11px 15px;font-size:12.5px;display:flex;align-items:center;gap:9px;min-width:240px;animation:slideIn .18s ease;}
+@keyframes slideIn{from{transform:translateX(18px);opacity:0}to{transform:translateX(0);opacity:1}}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ════════ SIDEBAR ════════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-name">Finan<span>Map</span> Pro</div>
+    <div class="sb-logo-sub">v4.0.0 · TALES · <span class="live" style="color:var(--green)">●</span> LIVE</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">🏠</span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('portfolio',this)"><span class="nav-icon">📊</span>Portfólio</div>
+    <div class="nav-item" onclick="showPage('fire',this)"><span class="nav-icon">🔥</span>FIRE Tracker</div>
+    <div class="sb-section">IA & Robôs</div>
+    <div class="nav-item" onclick="showPage('robos',this)"><span class="nav-icon">🤖</span>Robôs & GA</div>
+    <div class="nav-item" onclick="showPage('tecnico',this)"><span class="nav-icon">📈</span>Análise Técnica</div>
+    <div class="nav-item" onclick="showPage('ia',this)"><span class="nav-icon">🧬</span>IA Advisor</div>
+    <div class="sb-section">Controle</div>
+    <div class="nav-item" onclick="showPage('hodl',this)"><span class="nav-icon">🔒</span>HODL & Locks</div>
+    <div class="nav-item" onclick="showPage('corretoras',this)"><span class="nav-icon">🏦</span>Corretoras</div>
+    <div class="nav-item" onclick="showPage('notificacoes',this)"><span class="nav-icon">🔔</span>Notificações</div>
+  </nav>
+  <div class="sb-footer">
+    <div class="api-row">
+      <div class="api-dot" id="api-dot"></div>
+      <span id="api-status-text">Verificando backend...</span>
+    </div>
+    <div style="font-size:10px;color:var(--t3);margin-top:3px;font-family:var(--fm);">localhost:8000</div>
+  </div>
+</aside>
+
+<!-- ════════ MAIN ════════ -->
+<div class="main">
+<div class="topbar">
+  <div>
+    <div class="page-title" id="top-title">Dashboard</div>
+    <div class="page-sub" id="top-sub">Visão geral do portfólio · mercado ao vivo</div>
+  </div>
+  <div class="tb-right">
+    <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:rgba(16,185,129,.08);padding:5px 11px;border-radius:20px;border:1px solid rgba(16,185,129,.15);">
+      <span class="live">●</span> GA ativo · Sortino <span id="tb-sortino" style="font-family:var(--fm);font-weight:700;">2.14</span>
+    </div>
+    <button class="btn btn-sm" onclick="carregarTudo()">↻ Atualizar</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ DASHBOARD ═══════════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="grid4">
+    <div class="mc purple">
+      <div class="mc-l">Patrimônio Total</div>
+      <div class="mc-v" id="d-patrimonio" style="color:var(--accent)">R$—</div>
+      <div class="mc-s">↑ +R$3.840 este mês</div>
+    </div>
+    <div class="mc green">
+      <div class="mc-l">Rentab. 12m</div>
+      <div class="mc-v up" id="d-rentab">+18,4%</div>
+      <div class="mc-s">vs IBOV +12,1%</div>
+    </div>
+    <div class="mc amber">
+      <div class="mc-l">FIRE Progress</div>
+      <div class="mc-v" style="color:var(--accent3)" id="d-fire-pct">—%</div>
+      <div class="mc-s">Meta R$1,5M · ~8,3 anos</div>
+    </div>
+    <div class="mc blue">
+      <div class="mc-l">Sharpe / Sortino</div>
+      <div class="mc-v" style="color:var(--accent2)">1.82 / <span id="d-sortino" style="font-size:16px">2.14</span></div>
+      <div class="mc-s">GA geração <span id="d-ger">0</span></div>
+    </div>
+  </div>
+
+  <div class="grid32">
+    <div class="card">
+      <div class="sec">Alocação Kelly Criterion</div>
+      <div class="sec-sub">f* = (μ − rf) / σ² · otimizado pelo GA darwiniano</div>
+      <div id="d-alloc-bars"></div>
+      <div class="alloc-strip" id="d-alloc-strip" style="margin-top:10px;height:7px;border-radius:3px;"></div>
+    </div>
+    <div class="card">
+      <div class="sec">Mercado ao vivo</div>
+      <div class="sec-sub">yfinance · Binance API v3</div>
+      <div class="ind-row"><span class="ind-label">BTC/BRL</span><span class="ind-val" style="color:var(--accent3)" id="d-btc">R$519k</span></div>
+      <div class="ind-row"><span class="ind-label">USDT/BRL</span><span class="ind-val" id="d-usdt">R$5,17</span></div>
+      <div class="ind-row"><span class="ind-label">IBOV</span><span class="ind-val up">130.241</span></div>
+      <div class="ind-row"><span class="ind-label">Selic</span><span class="ind-val">10,5%</span></div>
+      <div class="ind-row"><span class="ind-label">IPCA 12m</span><span class="ind-val">4,8%</span></div>
+    </div>
+  </div>
+
+  <!-- GA CARD DARK -->
+  <div class="grid2">
+    <div style="background:#080b10;border:1px solid rgba(139,92,246,.2);border-radius:12px;padding:18px;cursor:pointer;margin-bottom:14px;" onclick="showPage('robos',document.querySelectorAll('.nav-item')[3])">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#a78bfa;display:inline-block;" class="live"></span>
+        <span style="font-size:10px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.6px;">Algoritmo Genético · Ativo</span>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:3px;">8 Robôs Investidores · 7 Genes</div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:13px;">GA local + backend · pop 200 · 50 gerações</div>
+      <div style="display:flex;gap:9px;">
+        <div style="flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:9px;text-align:center;">
+          <div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:3px;">SORTINO</div>
+          <div style="font-size:18px;font-weight:800;color:#a78bfa;font-family:var(--fm);" id="d-sortino2">2.14</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:9px;text-align:center;">
+          <div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:3px;">CAGR</div>
+          <div style="font-size:18px;font-weight:800;color:#34d399;font-family:var(--fm);" id="d-cagr">18%</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:9px;text-align:center;">
+          <div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:3px;">GERAÇÕES</div>
+          <div style="font-size:18px;font-weight:800;color:#94a3b8;font-family:var(--fm);" id="d-ger2">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="sec">Stress Test rápido</div>
+      <div class="sec-sub">Impacto no portfólio por cenário histórico</div>
+      <div id="d-stress-mini"><div class="empty-state" style="padding:1rem;font-size:11px;">Clique em ↻ Atualizar para carregar</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PORTFÓLIO ═══════════════════ -->
+<div id="page-portfolio" class="page">
+  <div class="grid4">
+    <div class="mc purple"><div class="mc-l">Total Investido</div><div class="mc-v">R$—</div><div class="mc-s">portfólio consolidado</div></div>
+    <div class="mc green"><div class="mc-l">Rentab. Total</div><div class="mc-v up">+18,4%</div><div class="mc-s">histórico</div></div>
+    <div class="mc amber"><div class="mc-l">Dividendos 12m</div><div class="mc-v" style="color:var(--accent3)">R$8.420</div><div class="mc-s">yield 3,4%</div></div>
+    <div class="mc blue"><div class="mc-l">VaR 95% (1d)</div><div class="mc-v" style="color:var(--red)" id="p-var">—</div><div class="mc-s">risco diário</div></div>
+  </div>
+  <div class="card">
+    <div class="sec">Carteira de ativos</div>
+    <div class="sec-sub">Binance · clique para análise técnica</div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead><tr><th>Ativo</th><th>Classe</th><th>Qtd</th><th>Preço médio</th><th>Cotação</th><th>Retorno</th><th>HODL</th></tr></thead>
+        <tbody id="portfolio-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="sec">VaR & CVaR do portfólio</div>
+      <div class="sec-sub">Calculado com correlações reais · scipy</div>
+      <button class="btn btn-ghost" onclick="calcularVaR()" style="margin-bottom:12px;width:100%">🎲 Calcular VaR/CVaR</button>
+      <div id="var-resultado"></div>
+    </div>
+    <div class="card">
+      <div class="sec">Distribuição por classe</div>
+      <div id="p-alloc-dist"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FIRE ═══════════════════ -->
+<div id="page-fire" class="page">
+  <div style="text-align:center;padding:1.5rem 0 1rem;">
+    <div style="font-size:10px;color:var(--t3);margin-bottom:7px;text-transform:uppercase;letter-spacing:.7px;font-family:var(--fm);">Anos para FIRE</div>
+    <div style="font-size:60px;font-weight:800;color:var(--accent);font-family:var(--fm);line-height:1;" id="fire-anos">8.3</div>
+    <div style="font-size:13px;color:var(--t2);margin-top:7px;">com <span style="color:var(--green);font-weight:700;" id="fire-prob">87%</span> de probabilidade · Monte Carlo 10k simulações</div>
+  </div>
+  <div class="fire-progress"><div class="fire-fill" id="fire-fill" style="width:34%"></div></div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:1.25rem;font-size:11px;color:var(--t3);">
+    <span id="fire-atual">R$247k atual</span><span id="fire-pct-label">34% completo</span><span id="fire-meta">Meta: R$1,5M</span>
+  </div>
+  <div class="mc-scenarios" style="margin-bottom:14px;">
+    <div class="scenario" style="background:rgba(59,158,255,.08);border:1px solid rgba(59,158,255,.15)">
+      <div class="sc-label" style="color:var(--accent2)">Otimista (p10)</div>
+      <div class="sc-val" style="color:var(--accent2)" id="fire-p10">6.1a</div>
+      <div class="sc-sub" style="color:var(--accent2)">10% das simulações</div>
+    </div>
+    <div class="scenario" style="background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.15)">
+      <div class="sc-label" style="color:var(--accent)">Realista (p50)</div>
+      <div class="sc-val" style="color:var(--accent)" id="fire-p50">8.3a</div>
+      <div class="sc-sub" style="color:var(--accent)">Mediana</div>
+    </div>
+    <div class="scenario" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15)">
+      <div class="sc-label" style="color:var(--accent3)">Conservador (p90)</div>
+      <div class="sc-val" style="color:var(--accent3)" id="fire-p90">12.1a</div>
+      <div class="sc-sub" style="color:var(--accent3)">90% das simulações</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">Parâmetros FIRE</div>
+    <div class="sec-sub">Ajuste e clique em Recalcular Monte Carlo</div>
+    <div class="grid3">
+      <div class="field"><label>Patrimônio atual</label><div class="prefix-input"><span>R$</span><input type="number" id="f-patrimonio" value="247000"></div></div>
+      <div class="field"><label>Aporte mensal</label><div class="prefix-input"><span>R$</span><input type="number" id="f-aporte" value="5000"></div></div>
+      <div class="field"><label>Despesas mensais</label><div class="prefix-input"><span>R$</span><input type="number" id="f-despesas" value="5000"></div></div>
+    </div>
+    <button class="btn btn-primary" onclick="calcularFire()" id="btn-fire" style="width:100%">🎲 Recalcular Monte Carlo (10k simulações)</button>
+  </div>
+  <div class="card">
+    <div class="sec">Stress Test · 6 cenários históricos</div>
+    <div class="sec-sub">Impacto no portfólio</div>
+    <button class="btn btn-ghost" onclick="calcularStress()" style="margin-bottom:12px">⚡ Calcular</button>
+    <div id="stress-grid" class="stress-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ROBÔS & GA ═══════════════════ -->
+<div id="page-robos" class="page">
+  <div class="grid4">
+    <div class="mc teal"><div class="mc-l">Robôs ativos</div><div class="mc-v" id="r-ativos">—</div></div>
+    <div class="mc green"><div class="mc-l">Melhor Sortino</div><div class="mc-v up" id="r-sortino">—</div></div>
+    <div class="mc amber"><div class="mc-l">Geração</div><div class="mc-v" style="color:var(--accent3)" id="r-gen">0/50</div></div>
+    <div class="mc blue"><div class="mc-l">CAGR projetado</div><div class="mc-v" style="color:var(--accent2)" id="r-cagr">—</div></div>
+  </div>
+
+  <!-- Backend button -->
+  <div style="background:#05080f;border:1px solid rgba(139,92,246,.2);border-radius:11px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="color:#a78bfa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">🧬 Otimizar via Backend FastAPI</div>
+      <div style="color:var(--t3);font-size:11.5px;">200 indivíduos · 50 gerações · Sortino + black swans</div>
+    </div>
+    <button class="btn btn-primary" onclick="otimizarBackend()" id="btn-backend-ga">Otimizar agora</button>
+  </div>
+
+  <div class="grid32">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px;">População · <span id="r-pop-count">0</span> robôs · toque para inspecionar</div>
+      <div class="robot-grid" id="robot-grid"></div>
+    </div>
+    <div>
+      <div class="card" id="robot-detail" style="display:none;">
+        <div id="robot-detail-content"></div>
+      </div>
+      <!-- Controles GA -->
+      <div class="card">
+        <div class="sec">Arena do GA · local</div>
+        <div class="sec-sub">7 genes · Sortino · evolução em tempo real</div>
+        <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);padding:8px 10px;border-radius:8px;margin-bottom:12px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--t3);" id="ga-dot"></div>
+          <span style="font-size:12px;color:var(--t2);" id="ga-status-text">Aguardando início</span>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:6px;">Taxa de mutação: <span style="color:var(--accent);" id="mut-label">15%</span></div>
+          <div class="pill-group">
+            <div class="pill" onclick="setMut(5)">5%</div>
+            <div class="pill active" onclick="setMut(15)">15%</div>
+            <div class="pill" onclick="setMut(25)">25%</div>
+            <div class="pill" onclick="setMut(35)">35%</div>
+          </div>
+        </div>
+        <div class="ga-metrics-row">
+          <div class="ga-met"><div class="ga-met-l">Sortino</div><div class="ga-met-v" style="color:var(--accent)" id="ga-m-sortino">—</div></div>
+          <div class="ga-met"><div class="ga-met-l">CAGR</div><div class="ga-met-v" style="color:var(--green)" id="ga-m-cagr">—</div></div>
+          <div class="ga-met"><div class="ga-met-l">Estratégia</div><div class="ga-met-v" style="font-size:10px;color:var(--accent3)" id="ga-m-strat">—</div></div>
+          <div class="ga-met"><div class="ga-met-l">Geração</div><div class="ga-met-v" id="ga-m-gen">0</div></div>
+        </div>
+        <div class="fitness-chart" id="fitness-chart"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="toggleGA()" id="btn-ga">▶ Iniciar</button>
+          <button class="btn btn-sm" onclick="stepGA()">+1</button>
+          <button class="btn btn-sm" onclick="resetGA()">↺ Reset</button>
+        </div>
+      </div>
+      <!-- Laboratório -->
+      <div class="card">
+        <div class="sec">Laboratório de cruzamento</div>
+        <div class="sec-sub">Selecione 2 robôs na grade</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <div class="cross-box" id="cross-p1"><span style="color:var(--t3);font-size:11px;">Pai 1</span></div>
+          <div style="font-size:18px;color:var(--t3);">×</div>
+          <div class="cross-box" id="cross-p2"><span style="color:var(--t3);font-size:11px;">Pai 2</span></div>
+          <div style="font-size:18px;color:var(--t3);">→</div>
+          <div class="cross-box filho" id="cross-filho"><span style="color:var(--t3);font-size:11px;">Filho</span></div>
+        </div>
+        <button class="btn btn-ghost" onclick="crossRobots()" id="btn-cross" style="width:100%;opacity:.4;" disabled>🔀 Cruzar genes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="card">
+    <div class="sec">Leaderboard · Top robôs por Sortino</div>
+    <table class="data-table">
+      <thead><tr><th>Rank</th><th>Robô</th><th>Estratégia</th><th>Horizonte</th><th>Stop</th><th>CAGR</th><th>Sortino</th></tr></thead>
+      <tbody id="robot-leaderboard"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ ANÁLISE TÉCNICA ═══════════════════ -->
+<div id="page-tecnico" class="page">
+  <div class="card" style="max-width:480px;">
+    <div class="sec">Analisar ativo</div>
+    <div class="sec-sub">RSI · MACD · Bollinger · Z-Score · Hurst · Regime · CVD · OFI</div>
+    <div class="field"><label>Ticker</label>
+      <select id="t-ticker">
+        <option value="BOVA11">BOVA11 — ETF Ibovespa</option>
+        <option value="IVVB11">IVVB11 — ETF S&P500</option>
+        <option value="PETR4">PETR4 — Petrobras</option>
+        <option value="VALE3">VALE3 — Vale</option>
+        <option value="BTC">BTC — Bitcoin</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="analisarTecnico()" style="width:100%">📊 Analisar</button>
+  </div>
+  <div id="tecnico-resultado" style="display:none;">
+    <div class="grid4">
+      <div class="mc purple"><div class="mc-l">RSI (14)</div><div class="mc-v" id="t-rsi">—</div><div class="mc-s" id="t-rsi-sub">—</div></div>
+      <div class="mc blue"><div class="mc-l">MACD Hist.</div><div class="mc-v" id="t-macd">—</div><div class="mc-s" id="t-macd-sub">—</div></div>
+      <div class="mc green"><div class="mc-l">Bollinger pos.</div><div class="mc-v" id="t-bb">—</div><div class="mc-s" id="t-bb-sub">—</div></div>
+      <div class="mc amber"><div class="mc-l">Score técnico</div><div class="mc-v" id="t-score">—</div><div class="mc-s">0–100</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="sec">Sinal unificado</div>
+        <div id="t-sinal-box" style="text-align:center;padding:1.25rem;"></div>
+      </div>
+      <div class="card">
+        <div class="sec">Indicadores detalhados</div>
+        <div id="t-indicadores"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ IA ADVISOR ═══════════════════ -->
+<div id="page-ia" class="page">
+  <div style="background:#05080f;border:1px solid rgba(139,92,246,.2);border-radius:13px;padding:20px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+      <span style="width:7px;height:7px;border-radius:50%;background:#a78bfa;display:inline-block;" class="live"></span>
+      <span style="font-size:10px;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.6px;">IA Darwiniana · GA ativo</span>
+    </div>
+    <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:3px;">FinanMap Pro — Copiloto de Investimentos</div>
+    <div style="font-size:11.5px;color:#64748b;margin-bottom:14px;">GA 7 genes · Monte Carlo 10k · Kelly Criterion · Black swans incluídos</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:4px;">CAGR</div><div style="font-size:19px;font-weight:800;color:#34d399;font-family:var(--fm);" id="ia-cagr">18%</div></div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:4px;">SORTINO</div><div style="font-size:19px;font-weight:800;color:#a78bfa;font-family:var(--fm);" id="ia-sortino">2.14</div></div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:4px;">ESTRATÉGIA</div><div style="font-size:13px;font-weight:800;color:#94a3b8;font-family:var(--fm);" id="ia-strat">—</div></div>
+      <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:4px;">GERAÇÕES</div><div style="font-size:19px;font-weight:800;color:#94a3b8;font-family:var(--fm);" id="ia-gen">—</div></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="sec">Análise Claude AI</div>
+      <div class="sec-sub">Análise personalizada do portfólio via API</div>
+      <button class="btn btn-primary" onclick="analisarIA()" id="btn-ia" style="width:100%;margin-bottom:12px;">🧠 Analisar portfólio com Claude</button>
+      <div id="ia-analise" style="font-size:12.5px;line-height:1.7;color:var(--t2);"></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="sec">Stress test detalhado</div>
+        <div class="sec-sub">6 cenários históricos · impacto em R$</div>
+        <div id="ia-stress"></div>
+      </div>
+      <div class="card">
+        <div class="sec">Alertas Kelly Criterion</div>
+        <div id="ia-alertas"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HODL & LOCKS ═══════════════════ -->
+<div id="page-hodl" class="page">
+  <div class="grid2">
+    <div class="card">
+      <div class="sec">🔒 Bloquear ativo como HODL</div>
+      <div class="sec-sub">O robô nunca vai tocar neste ativo</div>
+      <div class="field"><label>Corretora / Conta</label>
+        <select id="hodl-conta">
+          <option value="binance">🟡 Binance</option>
+          <option value="crypto_com">⚫ Crypto.com</option>
+          <option value="coinbase">🔵 Coinbase</option>
+          <option value="toro">🟢 Toro Investimentos</option>
+          <option value="avenue">🇺🇸 Avenue (EUA)</option>
+          <option value="metamask">🦊 MetaMask (wallet)</option>
+          <option value="xp">🟢 XP Investimentos</option>
+          <option value="clear">🟢 Clear</option>
+          <option value="nubank">🟣 Nubank</option>
+          <option value="inter">🟠 Inter</option>
+          <option value="btg">🟡 BTG Pactual</option>
+          <option value="foxbit">🦊 Foxbit</option>
+          <option value="mercado_bitcoin">🟠 Mercado Bitcoin</option>
+        </select>
+      </div>
+      <div class="field"><label>Ticker / Ativo</label><input type="text" id="hodl-ticker" placeholder="Ex: BTC, PETR4, ELON..."></div>
+      <div class="field"><label>Motivo</label>
+        <select id="hodl-motivo">
+          <option value="hodl">HODL — longo prazo</option>
+          <option value="garantia">Garantia de operação</option>
+          <option value="bloqueado_manual">Bloqueio manual</option>
+        </select>
+      </div>
+      <button class="btn btn-danger" onclick="bloquearAtivo()" style="width:100%">🔒 Bloquear</button>
+    </div>
+    <div class="card">
+      <div class="sec">⚡ Realização parcial automática</div>
+      <div class="sec-sub">Robô realiza lucro automaticamente ao atingir gatilho</div>
+      <div class="field"><label>Conta</label>
+        <select id="rea-conta"><option value="toro">Toro</option><option value="crypto_com">Crypto.com</option></select>
+      </div>
+      <div class="field"><label>Ativo</label><input type="text" id="rea-ticker" placeholder="Ex: BOVA11, CRO..."></div>
+      <div class="grid2" style="margin-bottom:0;">
+        <div class="field"><label>Gatilho</label>
+          <select id="rea-gatilho"><option value="0.10">+10%</option><option value="0.15">+15%</option><option value="0.20" selected>+20%</option><option value="0.30">+30%</option><option value="0.50">+50%</option></select>
+        </div>
+        <div class="field"><label>% Realizar</label>
+          <select id="rea-pct"><option value="0.25">25%</option><option value="0.30" selected>30%</option><option value="0.50">50%</option><option value="0.75">75%</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Destino</label>
+        <select id="rea-destino"><option value="TESOURO">Tesouro Selic</option><option value="BOVA11">BOVA11</option><option value="IVVB11">IVVB11</option><option value="BRL">BRL</option></select>
+      </div>
+      <button class="btn btn-success" onclick="configurarRealizacao()" style="width:100%">✅ Configurar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div><div class="sec">Ativos bloqueados (HODL)</div><div class="sec-sub">O robô nunca opera estes ativos</div></div>
+    </div>
+    <div id="hodl-list"><div class="empty-state">Nenhum ativo bloqueado ainda.</div></div>
+  </div>
+  <div class="card">
+    <div class="sec">Regras de realização</div>
+    <div id="realizacao-list"><div class="empty-state">Nenhuma regra configurada.</div></div>
+  </div>
+  <div class="card">
+    <div class="sec">2FA — Autenticação para operações &gt; R$500</div>
+    <div class="sec-sub">Token gerado para aprovação de ordens grandes</div>
+    <div class="grid2" style="margin-bottom:0;">
+      <div>
+        <div class="field"><label>User ID</label><input type="text" id="tfa-user" value="tales-user-123"></div>
+        <div class="field"><label>Operação</label>
+          <select id="tfa-op">
+            <option value="robo_executar">Robô executar ordem</option>
+            <option value="rebalancear">Rebalancear portfólio</option>
+            <option value="realizar_parcial">Realização parcial</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="solicitar2FA()" style="width:100%">📱 Gerar token 2FA</button>
+      </div>
+      <div id="tfa-resultado" style="display:flex;align-items:center;justify-content:center;">
+        <div class="empty-state">Token aparecerá aqui</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CORRETORAS ═══════════════════ -->
+<div id="page-corretoras" class="page">
+  <div class="card">
+    <div class="sec">Configurar API Keys</div>
+    <div class="sec-sub">Keys ficam no .env do backend — nunca no frontend</div>
+    <div class="grid2" style="margin-bottom:0;">
+      <div>
+        <div class="field"><label>Exchange</label>
+          <select id="cfg-exchange">
+            <option value="binance">🟡 Binance</option>
+            <option value="crypto_com">⚫ Crypto.com</option>
+            <option value="coinbase">🔵 Coinbase (JWT)</option>
+          </select>
+        </div>
+        <div class="field"><label>API Key</label><input type="password" id="cfg-key" placeholder="Cole aqui..."></div>
+        <div class="field"><label>API Secret</label><input type="password" id="cfg-secret" placeholder="Cole aqui..."></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm" onclick="testarConexao()">🔌 Testar</button>
+          <button class="btn btn-primary btn-sm" onclick="configurarBroker()">Salvar no .env</button>
+        </div>
+        <div id="cfg-resultado" style="margin-top:8px;font-size:12px;"></div>
+      </div>
+      <div>
+        <div class="card-sm">
+          <div class="sec" style="font-size:12px;margin-bottom:8px;">Binance</div>
+          <div class="ind-row"><span class="ind-label">Status</span><span id="binance-status"><span class="badge b-amber">Verificando...</span></span></div>
+          <div id="binance-saldo" style="margin-top:8px;font-size:12px;color:var(--t3);"></div>
+          <button class="btn btn-sm btn-ghost" onclick="carregarBinanceSaldo()" style="margin-top:8px;width:100%">Ver saldo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="sec">🔵 Coinbase</div>
+      <div class="sec-sub">JWT/ECDSA · cdp.coinbase.com → API Keys</div>
+      <div id="coinbase-saldo" style="font-size:12px;color:var(--t3);">Configure API Key acima</div>
+      <button class="btn btn-sm btn-ghost" onclick="carregarCoinbaseSaldo()" style="margin-top:10px;width:100%">Carregar saldo</button>
+    </div>
+    <div class="card">
+      <div class="sec">🦊 MetaMask / Web3</div>
+      <div class="sec-sub">Endereço público · leitura via Infura</div>
+      <div class="field"><label>Endereço Ethereum (0x...)</label><input type="text" id="metamask-address" placeholder="0x..."></div>
+      <button class="btn btn-sm btn-ghost" onclick="carregarMetamaskSaldo()" style="width:100%">Consultar blockchain</button>
+      <div id="metamask-saldo" style="margin-top:10px;font-size:12px;color:var(--t3);"></div>
+    </div>
+    <div class="card">
+      <div class="sec">🟢 Toro Investimentos</div>
+      <div class="sec-sub">Simulado · sem API pública</div>
+      <div id="toro-saldo"><div class="empty-state" style="padding:.75rem;font-size:11px;">Clique para carregar</div></div>
+      <button class="btn btn-sm btn-ghost" onclick="carregarToroSaldo()" style="margin-top:10px;width:100%">Carregar saldo</button>
+    </div>
+    <div class="card">
+      <div class="sec">🇺🇸 Avenue Securities</div>
+      <div class="sec-sub">Importar CSV · Avenue → Relatórios → Posições</div>
+      <div class="field"><label>Arquivo CSV</label><input type="file" id="avenue-file" accept=".csv" onchange="importarAvenue(this)" style="padding:6px;"></div>
+      <div id="avenue-posicoes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ NOTIFICAÇÕES ═══════════════════ -->
+<div id="page-notificacoes" class="page">
+  <div class="card">
+    <div class="sec">Centro de notificações</div>
+    <div class="sec-sub">Alertas dos robôs · Firebase FCM · iOS e Android</div>
+    <div id="notif-list">
+      <div class="notif-item"><div class="notif-icon" style="background:rgba(139,92,246,.1);">🧬</div><div><div class="notif-title">Nova strain evoluída: Alpha-1024</div><div class="notif-sub">Estratégia: swing_trade · Sortino 2.14 · CAGR 18% · há 2 min</div></div></div>
+      <div class="notif-item"><div class="notif-icon" style="background:rgba(16,185,129,.1);">✅</div><div><div class="notif-title">Ordem executada: BOVA11</div><div class="notif-sub">COMPRA R$800 @ R$128,40 concluída · há 15 min</div></div></div>
+      <div class="notif-item"><div class="notif-icon" style="background:rgba(245,158,11,.1);">💰</div><div><div class="notif-title">Lucro parcial realizado: CRO</div><div class="notif-sub">30% vendido (+20% lucro) → Tesouro Selic · R$240 realizados · há 1h</div></div></div>
+      <div class="notif-item"><div class="notif-icon" style="background:rgba(239,68,68,.1);">🔒</div><div><div class="notif-title">HODL bloqueou: ELON</div><div class="notif-sub">Robô tentou operar mas ativo está protegido · há 3h</div></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">Configurar notificações FCM</div>
+    <div class="sec-sub">Templates ativos por evento do sistema</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">Oportunidade detectada pelo robô</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">Ordem executada</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">Stop loss atingido</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">HODL — tentativa bloqueada</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">Realização parcial automática</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">Nova strain do GA</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12.5px;">Marco FIRE atingido</span><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════
+// FinanMap Pro v4 — JavaScript
+// Design: dark (Syne+DM Sans+JetBrains Mono)
+// Lógica: V3 original completa
+// Backend: FastAPI localhost:8000
+// ════════════════════════════════════════════════════
+
+const API='http://localhost:8000/api/v1';
+
+// ── Utilitários ──────────────────────────────────────
+async function apiFetch(path,method='GET',body=null){
+  try{
+    const opts={method,headers:{'Content-Type':'application/json'}};
+    if(body) opts.body=JSON.stringify(body);
+    const r=await fetch(API+path,opts);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  }catch(e){console.error(`API ${path}:`,e);return null;}
+}
+function fmt(n,d=2){return n?.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})||'—';}
+function fmtBRL(n){return 'R$'+fmt(n,0);}
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  const el=document.createElement('div');
+  el.className='toast-item';
+  el.style.borderColor=type==='error'?'rgba(239,68,68,.3)':'rgba(0,212,170,.2)';
+  el.innerHTML=`<span style="color:${type==='error'?'var(--red)':'var(--accent)'}">${type==='error'?'●':'●'}</span> ${msg}`;
+  t.appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+// ── Navegação ─────────────────────────────────────────
+const pageTitles={
+  dashboard:  ['Dashboard','Visão geral · portfólio · mercado ao vivo'],
+  portfolio:  ['Portfólio','Ativos · VaR/CVaR · distribuição'],
+  fire:       ['FIRE Tracker','Monte Carlo 10k · Regra dos 4% · cenários'],
+  robos:      ['Robôs & GA','7 genes · 5 estratégias · algoritmo genético'],
+  tecnico:    ['Análise Técnica','RSI · MACD · Bollinger · sinal unificado'],
+  ia:         ['IA Advisor','Claude API · Kelly · stress test · alertas'],
+  hodl:       ['HODL & Locks','Ativos intocáveis · realização parcial · 2FA'],
+  corretoras: ['Corretoras','Binance · Crypto.com · Coinbase · MetaMask · Toro · Avenue'],
+  notificacoes:['Notificações','Firebase FCM · alertas em tempo real'],
+};
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  if(el) el.classList.add('active');
+  const[t,s]=pageTitles[id]||['',''];
+  document.getElementById('top-title').textContent=t;
+  document.getElementById('top-sub').textContent=s;
+  if(id==='robos'&&robots.length===0) initRobots();
+  if(id==='portfolio') renderPortfolio();
+  if(id==='ia') carregarIA();
+}
+
+// ── Estado global ─────────────────────────────────────
+let robots=[],selectedRobots=[],gaRunning=false,gaGen=0;
+let gaInterval=null,mutPct=15,gaHistory=[];
+let realizacaoRules=[],hodlLocks=[];
+const PERFIL_ALLOC={moderado_agressivo:{renda_fixa:35,renda_var:30,internacional:15,cripto:20}};
+let ATIVOS=[],PATRIMONIO_REAL=0;
+const CLASSE_MAP={BTC:'cripto',ETH:'cripto',BNB:'cripto',SOL:'cripto',USDT:'renda_fixa',USDC:'renda_fixa',BUSD:'renda_fixa',BOVA11:'renda_var',IVVB11:'internacional'};
+function classificarAtivo(a){const u=a.toUpperCase();if(CLASSE_MAP[u])return CLASSE_MAP[u];if(['USDT','USDC','BUSD','DAI','TUSD'].some(s=>u.includes(s)))return'renda_fixa';return'cripto';}
+
+// ── GA Engine local ────────────────────────────────────
+const GA_ALLOC=['renda_fixa','renda_var','internacional','cripto'];
+const GA_RET={renda_fixa:.105,renda_var:.12,internacional:.14,cripto:.45};
+const GA_VOL={renda_fixa:.03,renda_var:.20,internacional:.15,cripto:.70};
+const GENE_COLORS={renda_fixa:'#8b5cf6',renda_var:'#3b9eff',internacional:'#10b981',cripto:'#f59e0b'};
+const EMOJIS=['🤖','🦾','🧬','⚡','🔬','🧪','🛸','💎','🔮','🌀','🦅','🐉','🎯','🔥','🧠','🌊'];
+const PFXS=['Alpha','Beta','Gamma','Delta','Sigma','Omega','Nova','Zeta','Titan','Nexus','Apex','Flux'];
+const RF=.105/12;
+
+function classificarEstrategia(g){
+  const h=g.horizonte||30,r=g.risco||.5,s=Math.abs(g.stop||.10),rv=g.renda_var||30;
+  if(h<=7&&r>=.65&&s<=.06) return'arbitragem';
+  if(h<=30&&r>=.4&&rv>=35) return'swing_trade';
+  if(h>=25&&r<=.55)        return'rebalanceamento';
+  if(h>=3&&h<=12&&s<=.12)  return'dividend_capture';
+  return'stop_dinamico';
+}
+const STRAT_CSS={swing_trade:'s-swing',arbitragem:'s-arbitragem',rebalanceamento:'s-rebalanceamento',dividend_capture:'s-dividend',stop_dinamico:'s-stop'};
+const STRAT_LABEL={swing_trade:'Swing Trade',arbitragem:'Arbitragem',rebalanceamento:'Rebalanceamento',dividend_capture:'Dividend Capture',stop_dinamico:'Stop Dinâmico'};
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function rndI(a,b){return Math.floor(rnd(a,b+1));}
+function normGenes(g){const t=GA_ALLOC.reduce((s,k)=>s+(g[k]||0),0);if(!t)return g;const r={};GA_ALLOC.forEach(k=>r[k]=Math.round(Math.max(0,(g[k]||0))/t*1000)/10);return r;}
+function calcFit(g){
+  const mu=GA_ALLOC.reduce((s,k)=>s+(g[k]||0)/100*(GA_RET[k]||0),0);
+  const sig=Math.sqrt(GA_ALLOC.reduce((s,k)=>s+Math.pow((g[k]||0)/100,2)*Math.pow(GA_VOL[k]||.1,2),0))||.001;
+  const sortino=(mu-RF*12)/(sig*.75);
+  const pen=(g.cripto||0)>40?.5:0;
+  return Math.max(0,Math.round((sortino-pen)*1000)/1000);
+}
+function makeRobot(i,genes,extra,gen=0){
+  if(!genes){const w=GA_ALLOC.map(()=>rnd(5,50)),t=w.reduce((a,b)=>a+b,0);genes={};GA_ALLOC.forEach((k,j)=>genes[k]=Math.round(w[j]/t*1000)/10);}
+  genes=normGenes(genes);
+  const g={...genes,horizonte:extra?.horizonte||Math.round(rnd(1,180)),risco:extra?.risco||Math.round(rnd(0,100))/100,stop:extra?.stop||-(Math.round(rnd(2,25)*10)/10)};
+  const strat=classificarEstrategia(g);
+  return{id:i,emoji:EMOJIS[i%EMOJIS.length],name:PFXS[i%PFXS.length]+'-'+(1000+i),strain:'v'+rndI(1,999)+'.'+rndI(0,9),genes:g,gen,fit:calcFit(genes),cagr:Math.round(GA_ALLOC.reduce((s,k)=>s+(genes[k]||0)/100*(GA_RET[k]||0),0)*1000)/10,status:i<2?'elite':i<4?'mutante':i>6?'extinto':'normal',strat};
+}
+function initRobots(){const seed={renda_fixa:35,renda_var:30,internacional:15,cripto:20};robots=[];for(let i=0;i<8;i++) robots.push(makeRobot(i,i===0?{...seed}:null));robots.sort((a,b)=>b.fit-a.fit);selectedRobots=[];gaGen=0;gaHistory=[];renderRobots();}
+function gaStep(){
+  robots.sort((a,b)=>b.fit-a.fit);
+  const nova=[...robots.slice(0,2).map(r=>({...r,status:'elite'}))];
+  while(nova.length<8){
+    const p1=robots[rndI(0,Math.min(3,robots.length-1))],p2=robots[rndI(0,Math.min(3,robots.length-1))];
+    const g={};GA_ALLOC.forEach(k=>{let v=Math.random()<.5?(p1.genes[k]||0):(p2.genes[k]||0);if(Math.random()<mutPct/100)v=Math.max(0,v+rnd(-12,12));g[k]=v;});
+    const normed=normGenes(g);
+    const h=Math.max(1,Math.min(180,(Math.random()<.5?(p1.genes.horizonte||30):(p2.genes.horizonte||30))+(Math.random()<mutPct/100?rnd(-15,15):0)));
+    const r_=Math.max(0,Math.min(1,(Math.random()<.5?(p1.genes.risco||.5):(p2.genes.risco||.5))+(Math.random()<mutPct/100?rnd(-.12,.12):0)));
+    const s=Math.max(-25,Math.min(-2,(Math.random()<.5?(p1.genes.stop||-10):(p2.genes.stop||-10))+(Math.random()<mutPct/100?rnd(-3,3):0)));
+    nova.push(makeRobot(nova.length,normed,{horizonte:Math.round(h),risco:Math.round(r_*100)/100,stop:Math.round(s*10)/10},gaGen+1));
+  }
+  nova.forEach((r,i)=>r.status=i<2?'elite':Math.random()<.12?'mutante':i>6?'extinto':'normal');
+  robots=nova.slice(0,8);gaGen++;
+  const best=robots[0],avg=Math.round(robots.reduce((s,r)=>s+r.fit,0)/robots.length*1000)/1000;
+  gaHistory=[...gaHistory,{best:best.fit,avg}].slice(-40);
+  renderRobots();atualizarGAMetrics();
+}
+function toggleGA(){
+  if(gaRunning){clearInterval(gaInterval);gaRunning=false;document.getElementById('btn-ga').textContent='▶ Iniciar';document.getElementById('ga-dot').style.cssText='background:var(--t3);';document.getElementById('ga-status-text').textContent=`Pausado na geração ${gaGen}`;
+  }else{
+    if(gaGen>=50)return;
+    gaRunning=true;document.getElementById('btn-ga').textContent='⏸ Pausar';
+    document.getElementById('ga-dot').style.cssText='background:var(--green);animation:blink 1.5s infinite;';
+    document.getElementById('ga-status-text').textContent=`Evoluindo geração ${gaGen}...`;
+    gaInterval=setInterval(()=>{if(gaGen>=50){clearInterval(gaInterval);gaRunning=false;document.getElementById('btn-ga').textContent='▶ Iniciar';document.getElementById('ga-status-text').textContent='Evolução concluída 🏆';return;}gaStep();document.getElementById('ga-status-text').textContent=`Evoluindo geração ${gaGen}...`;},220);
+  }
+}
+function resetGA(){clearInterval(gaInterval);gaRunning=false;gaGen=0;gaHistory=[];document.getElementById('btn-ga').textContent='▶ Iniciar';document.getElementById('ga-dot').style.cssText='background:var(--t3);';document.getElementById('ga-status-text').textContent='Aguardando início';initRobots();}
+function setMut(v){mutPct=v;document.getElementById('mut-label').textContent=v+'%';document.querySelectorAll('.pill-group .pill').forEach(p=>p.classList.toggle('active',p.textContent===v+'%'));}
+function stepGA(){gaStep();}
+
+function atualizarGAMetrics(){
+  const best=robots[0];if(!best)return;
+  const ativos=robots.filter(r=>r.status!=='extinto').length;
+  document.getElementById('r-ativos').textContent=ativos;
+  document.getElementById('r-sortino').textContent=best.fit.toFixed(3);
+  document.getElementById('r-gen').textContent=gaGen+'/50';
+  document.getElementById('r-cagr').textContent=best.cagr+'%';
+  document.getElementById('ga-m-sortino').textContent=best.fit.toFixed(3);
+  document.getElementById('ga-m-cagr').textContent=best.cagr+'%';
+  document.getElementById('ga-m-strat').textContent=STRAT_LABEL[best.strat]||'—';
+  document.getElementById('ga-m-gen').textContent=gaGen;
+  document.getElementById('d-sortino').textContent=best.fit.toFixed(3);
+  document.getElementById('d-sortino2').textContent=best.fit.toFixed(3);
+  document.getElementById('d-cagr').textContent=best.cagr+'%';
+  document.getElementById('d-ger').textContent=gaGen;
+  document.getElementById('d-ger2').textContent=gaGen;
+  document.getElementById('ia-sortino').textContent=best.fit.toFixed(3);
+  document.getElementById('ia-cagr').textContent=best.cagr+'%';
+  document.getElementById('ia-strat').textContent=(STRAT_LABEL[best.strat]||'—').replace('_',' ');
+  document.getElementById('ia-gen').textContent=gaGen;
+  document.getElementById('tb-sortino').textContent=best.fit.toFixed(3);
+  const fc=document.getElementById('fitness-chart');
+  if(gaHistory.length>1){
+    const maxF=Math.max(...gaHistory.map(h=>h.best))||1;
+    fc.innerHTML=gaHistory.slice(-35).map(h=>`<div class="fc-bar"><div class="fc-avg" style="height:${Math.max(2,(h.avg/maxF)*44)}px"></div><div class="fc-best" style="height:${Math.max(1,(h.best/maxF)*44-Math.max(2,(h.avg/maxF)*44))}px"></div></div>`).join('');
+  }
+}
+
+function renderRobots(){
+  const grid=document.getElementById('robot-grid');if(!grid)return;
+  document.getElementById('r-pop-count').textContent=robots.length;
+  grid.innerHTML=robots.map((r,i)=>`
+    <div class="robot-card ${r.status} ${selectedRobots.includes(i)?'selected':''}" onclick="selectRobot(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div class="robot-avatar" style="background:${r.status==='elite'?'rgba(16,185,129,.12)':r.status==='mutante'?'rgba(245,158,11,.12)':'rgba(139,92,246,.12)'}">${r.emoji}</div>
+        <span class="strat-badge ${STRAT_CSS[r.strat]||'s-stop'}">${STRAT_LABEL[r.strat]||''}</span>
+      </div>
+      <div class="robot-name">${r.name}</div>
+      <div class="robot-strain">${r.strain}</div>
+      <div class="dna-strip">${GA_ALLOC.map(k=>`<div style="flex:${r.genes[k]||0};background:${GENE_COLORS[k]}"></div>`).join('')}</div>
+      <div class="strat-genes">
+        <span class="strat-gene">H=${Math.round(r.genes.horizonte||30)}d</span>
+        <span class="strat-gene">R=${Math.round((r.genes.risco||.5)*100)}%</span>
+        <span class="strat-gene" style="color:var(--red)">S=${(r.genes.stop||-10).toFixed(1)}%</span>
+      </div>
+      <div class="robot-metrics">
+        <div class="rm-item"><div class="rm-label">Sortino</div><div class="rm-val" style="color:var(--accent)">${r.fit.toFixed(3)}</div></div>
+        <div class="rm-item"><div class="rm-label">CAGR</div><div class="rm-val" style="color:var(--green)">${r.cagr}%</div></div>
+      </div>
+    </div>`).join('');
+  const lb=document.getElementById('robot-leaderboard');
+  if(lb) lb.innerHTML=[...robots].sort((a,b)=>b.fit-a.fit).slice(0,5).map((r,i)=>`
+    <tr onclick="selectRobot(${robots.indexOf(r)})" style="cursor:pointer">
+      <td style="font-weight:800;color:${i===0?'var(--accent3)':i===1?'var(--t2)':i===2?'#cd7f32':'var(--t3)'};font-family:var(--fm)">#${i+1}</td>
+      <td style="color:var(--text)">${r.emoji} <b>${r.name}</b></td>
+      <td><span class="strat-badge ${STRAT_CSS[r.strat]}">${STRAT_LABEL[r.strat]}</span></td>
+      <td style="font-family:var(--fm)">${Math.round(r.genes.horizonte||30)}d</td>
+      <td style="color:var(--red);font-family:var(--fm)">${(r.genes.stop||-10).toFixed(1)}%</td>
+      <td style="color:var(--green);font-family:var(--fm)">${r.cagr}%</td>
+      <td style="font-weight:800;color:var(--accent);font-family:var(--fm)">${r.fit.toFixed(3)}</td>
+    </tr>`).join('');
+  atualizarGAMetrics();
+}
+
+function selectRobot(i){
+  if(selectedRobots.includes(i)) selectedRobots=selectedRobots.filter(x=>x!==i);
+  else if(selectedRobots.length<2) selectedRobots.push(i);
+  else selectedRobots=[i];
+  renderRobots();
+  const r=robots[i];
+  const detail=document.getElementById('robot-detail');
+  detail.style.display='block';
+  document.getElementById('robot-detail-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <span style="font-size:34px">${r.emoji}</span>
+      <div style="flex:1"><div style="font-size:14px;font-weight:800;">${r.name}</div>
+        <div style="font-size:10px;color:var(--t3);font-family:var(--fm)">${r.strain} · Geração ${r.gen}</div></div>
+      <span class="strat-badge ${STRAT_CSS[r.strat]}">${STRAT_LABEL[r.strat]}</span>
+    </div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:8px;">Genes de Alocação</div>
+    ${GA_ALLOC.map(k=>`
+      <div class="alloc-row">
+        <div class="alloc-dot" style="background:${GENE_COLORS[k]}"></div>
+        <span style="flex:1;font-size:12px;color:var(--t2)">${k.replace('_',' ')}</span>
+        <div class="alloc-track" style="flex:2"><div class="alloc-fill" style="width:${Math.round(r.genes[k]||0)}%;background:${GENE_COLORS[k]}"></div></div>
+        <span style="font-size:11px;font-weight:700;font-family:var(--fm);min-width:35px;text-align:right">${Math.round(r.genes[k]||0)}%</span>
+      </div>`).join('')}
+    <div class="sep"></div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:8px;">Genes de Estratégia</div>
+    <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">Horizonte</span><b style="font-family:var(--fm)">${Math.round(r.genes.horizonte||30)} dias</b></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">Tolerância risco</span><b style="font-family:var(--fm)">${Math.round((r.genes.risco||.5)*100)}%</b></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--t2)">Stop loss</span><b style="color:var(--red);font-family:var(--fm)">${(r.genes.stop||-10).toFixed(1)}%</b></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+      <div class="ga-met"><div class="ga-met-l">Sortino</div><div class="ga-met-v" style="color:var(--accent)">${r.fit.toFixed(3)}</div></div>
+      <div class="ga-met"><div class="ga-met-l">CAGR</div><div class="ga-met-v" style="color:var(--green)">${r.cagr}%</div></div>
+    </div>`;
+  if(selectedRobots.length>=1){
+    const p=robots[selectedRobots[0]];
+    document.getElementById('cross-p1').innerHTML=`<div style="font-size:24px">${p.emoji}</div><div style="font-size:11px;font-weight:700">${p.name}</div><div style="font-size:10px;color:var(--accent);font-family:var(--fm)">Sortino ${p.fit.toFixed(3)}</div>`;
+  }
+  if(selectedRobots.length>=2){
+    const p=robots[selectedRobots[1]];
+    document.getElementById('cross-p2').innerHTML=`<div style="font-size:24px">${p.emoji}</div><div style="font-size:11px;font-weight:700">${p.name}</div><div style="font-size:10px;color:var(--accent);font-family:var(--fm)">Sortino ${p.fit.toFixed(3)}</div>`;
+    document.getElementById('btn-cross').disabled=false;document.getElementById('btn-cross').style.opacity='1';
+  }
+}
+
+function crossRobots(){
+  if(selectedRobots.length<2)return;
+  const p1=robots[selectedRobots[0]],p2=robots[selectedRobots[1]];
+  const g={};GA_ALLOC.forEach(k=>{let v=Math.random()<.5?(p1.genes[k]||0):(p2.genes[k]||0);if(Math.random()<mutPct/100)v=Math.max(0,v+rnd(-15,15));g[k]=v;});
+  const normed=normGenes(g);
+  const h=Math.max(1,Math.min(180,(Math.random()<.5?(p1.genes.horizonte||30):(p2.genes.horizonte||30))+rnd(-10,10)));
+  const r_=Math.max(0,Math.min(1,(Math.random()<.5?(p1.genes.risco||.5):(p2.genes.risco||.5))+rnd(-.1,.1)));
+  const s=Math.max(-25,Math.min(-2,(Math.random()<.5?(p1.genes.stop||-10):(p2.genes.stop||-10))+rnd(-2,2)));
+  const filho=makeRobot(robots.length,normed,{horizonte:Math.round(h),risco:Math.round(r_*100)/100,stop:Math.round(s*10)/10},gaGen+1);
+  filho.status=filho.fit>Math.max(p1.fit,p2.fit)*1.04?'mutante':'normal';
+  document.getElementById('cross-filho').innerHTML=`
+    <div style="font-size:24px">${filho.emoji}</div>
+    <div style="font-size:11px;font-weight:700">${filho.name}</div>
+    <div style="font-size:10px;color:var(--accent);font-family:var(--fm)">Sortino ${filho.fit.toFixed(3)}</div>
+    <span class="strat-badge ${STRAT_CSS[filho.strat]}" style="margin-top:4px">${STRAT_LABEL[filho.strat]}</span>
+    ${filho.status==='mutante'?`<div style="font-size:9px;color:var(--accent3);margin-top:4px">🧬 Nova strain!</div>`:''}`;
+  toast('Cruzamento concluído! Filho: '+filho.name+' · Sortino '+filho.fit.toFixed(3));
+}
+
+// ── Backend GA ─────────────────────────────────────────
+async function otimizarBackend(){
+  const btn=document.getElementById('btn-backend-ga');
+  btn.innerHTML='<span class="loading-spinner"></span> Otimizando...';btn.disabled=true;
+  const res=await apiFetch('/ia/optimize','POST',{patrimonio:PATRIMONIO_REAL||100,aporte:0,perfil:'agressivo',incluir_cripto:true,geracoes:50,populacao:200});
+  btn.textContent='Otimizar agora';btn.disabled=false;
+  if(!res){toast('Backend offline — GA local ativo','error');return;}
+  const a=res.melhor_alocacao;
+  const extra={horizonte:a.horizonte_dias||30,risco:a.tolerancia_risco||.5,stop:a.stop_loss_pct||(-10)};
+  const genes={renda_fixa:a.renda_fixa||35,renda_var:a.renda_var||30,internacional:a.internacional||15,cripto:a.cripto||20};
+  const novoRobot=makeRobot(robots.length,genes,extra,gaGen+1);
+  novoRobot.status='elite';novoRobot.fit=res.sortino_ratio;novoRobot.cagr=res.cagr_projetado;
+  robots=[novoRobot,...robots].slice(0,8);robots.sort((a,b)=>b.fit-a.fit);
+  renderRobots();
+  toast('🧬 Nova strain do backend: '+novoRobot.name+' · Sortino '+res.sortino_ratio);
+}
+
+// ── FIRE ───────────────────────────────────────────────
+async function calcularFire(){
+  const btn=document.getElementById('btn-fire');
+  btn.innerHTML='<span class="loading-spinner"></span> Calculando 10k simulações...';btn.disabled=true;
+  const patrimonio=parseFloat(document.getElementById('f-patrimonio').value)||247000;
+  const aporte=parseFloat(document.getElementById('f-aporte').value)||5000;
+  const despesas=parseFloat(document.getElementById('f-despesas').value)||5000;
+  const res=await apiFetch('/fire/calculate','POST',{patrimonio_atual:patrimonio,aporte_mensal:aporte,despesas_mensais:despesas});
+  btn.textContent='🎲 Recalcular Monte Carlo (10k simulações)';btn.disabled=false;
+  if(!res){toast('Backend offline — cálculo local','error');return;}
+  const mc=res.monte_carlo||res;
+  const anos=mc.anos_p50||res.anos_para_fire||8.3;
+  const meta=mc.patrimonio_meta||despesas*25*12;
+  const pct=Math.min(100,Math.round(patrimonio/meta*100));
+  document.getElementById('fire-anos').textContent=anos.toFixed(1);
+  document.getElementById('fire-prob').textContent=(mc.prob_sucesso_pct||87).toFixed(0)+'%';
+  document.getElementById('fire-fill').style.width=pct+'%';
+  document.getElementById('fire-pct-label').textContent=pct+'% completo';
+  document.getElementById('fire-atual').textContent=fmtBRL(patrimonio)+' atual';
+  document.getElementById('fire-meta').textContent='Meta: '+fmtBRL(meta);
+  document.getElementById('fire-p10').textContent=((mc.anos_p10)||anos*.75).toFixed(1)+'a';
+  document.getElementById('fire-p50').textContent=anos.toFixed(1)+'a';
+  document.getElementById('fire-p90').textContent=((mc.anos_p90)||anos*1.45).toFixed(1)+'a';
+  document.getElementById('d-fire-pct').textContent=pct+'%';
+  document.getElementById('d-patrimonio').textContent=fmtBRL(patrimonio);
+  toast('Monte Carlo concluído · '+pct+'% do FIRE');
+}
+
+async function calcularStress(){
+  const alloc={renda_fixa:35,renda_var:30,cripto:20,internacional:15};
+  const patrimonio=parseFloat(document.getElementById('f-patrimonio')?.value||'247000')||247000;
+  const res=await apiFetch('/tecnico/stress','POST',{alocacao:alloc,patrimonio});
+  if(!res)return;
+  const CENARIOS=[
+    {key:'crash_cripto_2022',label:'Crash cripto 2022',c:'var(--red)',bg:'rgba(239,68,68,.08)'},
+    {key:'covid_2020',label:'Covid 2020',c:'var(--red)',bg:'rgba(239,68,68,.08)'},
+    {key:'crise_br_2015',label:'Crise BR 2015',c:'var(--accent3)',bg:'rgba(245,158,11,.08)'},
+    {key:'inflacao_2022',label:'Inflação 2022',c:'var(--accent3)',bg:'rgba(245,158,11,.08)'},
+    {key:'cenario_base_2026',label:'Base 2026',c:'var(--green)',bg:'rgba(16,185,129,.08)'},
+    {key:'bull_crypto_2024',label:'Bull crypto 2024',c:'var(--accent2)',bg:'rgba(59,158,255,.08)'},
+  ];
+  document.getElementById('stress-grid').innerHTML=CENARIOS.map(c=>{
+    const d=res[c.key]||{};
+    return`<div class="stress-card" style="background:${c.bg};border:1px solid ${c.c}33">
+      <div class="stress-label" style="color:${c.c}">${c.label}</div>
+      <div class="stress-val" style="color:${c.c}">${d.positivo?'+':''}${fmtBRL(d.impacto_brl||0)}</div>
+      <div class="stress-sub" style="color:${c.c}">${(d.impacto_pct||0).toFixed(1)}%</div>
+    </div>`;}).join('');
+  const minids=document.getElementById('d-stress-mini');
+  if(minids) minids.innerHTML=CENARIOS.slice(0,4).map(c=>{
+    const d=res[c.key]||{};
+    return`<div class="ind-row"><span class="ind-label">${c.label}</span><span style="font-size:13px;font-weight:700;color:${c.c};font-family:var(--fm)">${d.positivo?'+':''}${fmtBRL(d.impacto_brl||0)}</span></div>`;}).join('');
+}
+
+// ── Análise técnica ────────────────────────────────────
+const PRECOS_MOCK={
+  BOVA11:[120,118,115,112,108,104,100,98,96,94,92,90,88,87,86,88,90,93,96,100,104,107,110,114,118,121,125],
+  IVVB11:[280,275,270,268,265,262,258,255,252,250,248,247,249,252,255,258,262,265,268,272,276,280,284,288,292,295,298],
+  PETR4:[38,37,36,35,34,33,32,31,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,44,43,42,41],
+  VALE3:[65,63,61,59,57,55,54,53,52,51,50,51,52,53,55,57,59,61,63,65,67,69,71,73,75,74,73],
+  BTC:[450000,440000,430000,420000,410000,400000,390000,385000,380000,375000,370000,365000,370000,380000,390000,400000,410000,420000,430000,440000,450000,460000,470000,480000,490000,500000,519000],
+};
+async function analisarTecnico(){
+  const ticker=document.getElementById('t-ticker').value;
+  const precos=PRECOS_MOCK[ticker]||PRECOS_MOCK.BOVA11;
+  const res=await apiFetch('/tecnico/ativo','POST',{ticker,precos});
+  if(!res){toast('Backend offline','error');return;}
+  document.getElementById('tecnico-resultado').style.display='block';
+  const rsi=res.rsi;
+  document.getElementById('t-rsi').textContent=rsi.toFixed(1);
+  document.getElementById('t-rsi').style.color=rsi<30?'var(--green)':rsi>70?'var(--red)':'var(--accent3)';
+  document.getElementById('t-rsi-sub').textContent=rsi<30?'Oversold — compra':rsi>70?'Overbought — venda':'Neutro';
+  const macd=res.macd_hist;
+  document.getElementById('t-macd').textContent=(macd>=0?'+':'')+macd.toFixed(4);
+  document.getElementById('t-macd').style.color=macd>=0?'var(--green)':'var(--red)';
+  document.getElementById('t-macd-sub').textContent=macd>=0?'Momentum positivo':'Momentum negativo';
+  const bb=res.bollinger?.posicao||.5;
+  document.getElementById('t-bb').textContent=(bb*100).toFixed(0)+'%';
+  document.getElementById('t-bb').style.color=bb<.2?'var(--green)':bb>.8?'var(--red)':'var(--text)';
+  document.getElementById('t-bb-sub').textContent=bb<.2?'Próximo ao suporte':bb>.8?'Próximo à resistência':'Meio das bandas';
+  document.getElementById('t-score').textContent=res.score;
+  const sinal=res.sinal,forca=res.forca_sinal;
+  document.getElementById('t-sinal-box').innerHTML=`
+    <div class="signal-badge sig-${sinal}" style="font-size:17px;padding:9px 22px;display:inline-block;margin-bottom:12px">${sinal.toUpperCase()}</div>
+    <div style="font-size:12px;color:var(--t2)">Força: <b>${Math.round(forca*100)}%</b></div>
+    <div style="font-size:11px;color:var(--t3);margin-top:5px">${ticker} · ${fmtBRL(res.preco_atual)}</div>`;
+  document.getElementById('t-indicadores').innerHTML=`
+    <div class="ind-row"><span class="ind-label">SMA 20</span><span class="ind-val">${fmtBRL(res.medias?.sma_20||0)}</span></div>
+    <div class="ind-row"><span class="ind-label">SMA 50</span><span class="ind-val">${fmtBRL(res.medias?.sma_50||0)}</span></div>
+    <div class="ind-row"><span class="ind-label">EMA 9</span><span class="ind-val">${fmtBRL(res.medias?.ema_9||0)}</span></div>
+    <div class="ind-row"><span class="ind-label">Bollinger sup.</span><span class="ind-val">${fmtBRL(res.bollinger?.upper||0)}</span></div>
+    <div class="ind-row"><span class="ind-label">Bollinger inf.</span><span class="ind-val">${fmtBRL(res.bollinger?.lower||0)}</span></div>
+    <div class="ind-row"><span class="ind-label">Tendência</span><span class="ind-val">${res.tendencia}</span></div>`;
+  toast('Análise técnica '+ticker+' concluída!');
+}
+
+// ── IA Advisor ─────────────────────────────────────────
+async function carregarIA(){
+  const alloc={renda_fixa:35,renda_var:30,cripto:20,internacional:15};
+  const res=await apiFetch('/tecnico/stress','POST',{alocacao:alloc,patrimonio:PATRIMONIO_REAL||100});
+  if(res){
+    const CENS=[
+      {key:'crash_cripto_2022',l:'Crash cripto',c:'var(--red)',bg:'rgba(239,68,68,.08)'},
+      {key:'covid_2020',l:'Covid 2020',c:'var(--red)',bg:'rgba(239,68,68,.08)'},
+      {key:'cenario_base_2026',l:'Base 2026',c:'var(--green)',bg:'rgba(16,185,129,.08)'},
+      {key:'bull_crypto_2024',l:'Bull crypto',c:'var(--accent2)',bg:'rgba(59,158,255,.08)'},
+    ];
+    document.getElementById('ia-stress').innerHTML=CENS.map(c=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:6px;background:${c.bg};border-radius:8px;border:1px solid ${c.c}22">
+        <span style="font-size:12px;font-weight:700;color:${c.c}">${c.l}</span>
+        <span style="font-size:13px;font-weight:800;color:${c.c};font-family:var(--fm)">${(res[c.key]?.positivo?'+':'')+fmtBRL(res[c.key]?.impacto_brl||0)}</span>
+      </div>`).join('');
+  }
+  document.getElementById('ia-alertas').innerHTML=`
+    <div style="border-left:3px solid var(--accent3);padding:9px;background:rgba(245,158,11,.07);border-radius:0 8px 8px 0;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent3);margin-bottom:3px">⚠️ Concentração em cripto</div>
+      <div style="font-size:11px;color:var(--t2)">Bitcoin em 12,7% supera Kelly ótimo de 8,4%. Rebalancear R$6.800 → Tesouro IPCA+.</div>
+    </div>
+    <div style="border-left:3px solid var(--accent2);padding:9px;background:rgba(59,158,255,.07);border-radius:0 8px 8px 0;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:3px">📈 Selic em 10,5%</div>
+      <div style="font-size:11px;color:var(--t2)">Tesouro IPCA+6,2% oferece retorno real atrativo. Ampliar renda fixa.</div>
+    </div>
+    <div style="border-left:3px solid var(--green);padding:9px;background:rgba(16,185,129,.07);border-radius:0 8px 8px 0">
+      <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:3px">🏘️ FIIs subexpostos</div>
+      <div style="font-size:11px;color:var(--t2)">FIIs em 5,5% abaixo do ideal. Com Selic cadente (Q4/26), ampliar para 10-12%.</div>
+    </div>`;
+}
+
+async function analisarIA(){
+  const btn=document.getElementById('btn-ia');
+  btn.innerHTML='<span class="loading-spinner"></span> Consultando Claude...';btn.disabled=true;
+  const res=await apiFetch('/ia/analyze','POST',{perfil:'moderado_agressivo',aporte_mensal:5000,patrimonio_total:PATRIMONIO_REAL||100,anos_para_fire:8.3,score_risco:72});
+  btn.textContent='🧠 Analisar portfólio com Claude';btn.disabled=false;
+  const analise=res?.analise||'Análise automática: portfólio bem diversificado com Sharpe 1,82.\nRecomendação: rebalancear BTC de 12,7% → 8,4% (Kelly ótimo). BOVA11 com RSI próximo ao oversold — oportunidade de aumento em renda variável. Considerar ampliar FIIs para 10% dado cenário de Selic cadente em Q4/2026.';
+  document.getElementById('ia-analise').innerHTML=`<div style="background:rgba(0,212,170,.06);border-left:3px solid var(--accent);padding:12px;border-radius:0 9px 9px 0;font-size:12.5px;line-height:1.7;color:var(--t2)">${analise.replace(/\n/g,'<br>')}</div>`;
+  toast('Claude respondeu!');
+}
+
+// ── HODL ───────────────────────────────────────────────
+async function bloquearAtivo(){
+  const conta=document.getElementById('hodl-conta').value,ticker=document.getElementById('hodl-ticker').value.trim().toUpperCase(),motivo=document.getElementById('hodl-motivo').value;
+  if(!ticker){toast('Digite o ticker','error');return;}
+  const res=await apiFetch('/hodl/lock','POST',{conta,ticker,motivo});
+  if(res){hodlLocks.push(res);renderHodlLocks();document.getElementById('hodl-ticker').value='';toast('🔒 '+ticker+' bloqueado em '+conta);}
+  else{hodlLocks.push({conta,ticker,motivo});renderHodlLocks();document.getElementById('hodl-ticker').value='';toast('🔒 '+ticker+' bloqueado localmente');}
+}
+async function carregarHodlLocks(){const res=await apiFetch('/hodl/locks');if(res) hodlLocks=res.locks||[];renderHodlLocks();}
+function renderHodlLocks(){
+  const el=document.getElementById('hodl-list');
+  if(!hodlLocks.length){el.innerHTML='<div class="empty-state">Nenhum ativo bloqueado ainda.</div>';return;}
+  el.innerHTML=hodlLocks.map(l=>`
+    <div class="hodl-item">
+      <div class="hodl-lock-icon">🔒</div>
+      <div style="flex:1"><div class="hodl-ticker">${l.ticker}</div><div class="hodl-conta">${l.conta} · ${l.motivo||'hodl'}</div></div>
+      <button class="btn btn-sm btn-danger" onclick="desbloquearAtivo('${l.conta}','${l.ticker}')">Desbloquear</button>
+    </div>`).join('');
+}
+async function desbloquearAtivo(conta,ticker){
+  if(!confirm(`Desbloquear ${ticker} em ${conta}? O robô poderá operar.`))return;
+  await apiFetch(`/hodl/lock/${conta}/${ticker}`,'DELETE');
+  hodlLocks=hodlLocks.filter(l=>!(l.conta===conta&&l.ticker===ticker));
+  renderHodlLocks();toast('🔓 '+ticker+' desbloqueado');
+}
+async function configurarRealizacao(){
+  const conta=document.getElementById('rea-conta').value,ticker=document.getElementById('rea-ticker').value.trim().toUpperCase();
+  if(!ticker){toast('Digite o ticker','error');return;}
+  const gatilho=parseFloat(document.getElementById('rea-gatilho').value);
+  const pct=parseFloat(document.getElementById('rea-pct').value);
+  const destino=document.getElementById('rea-destino').value;
+  const res=await apiFetch('/hodl/realizacao','POST',{conta,ticker,gatilho_lucro_pct:gatilho,percentual_realizar:pct,destino});
+  const msg=res?.mensagem||`${ticker}: ao +${(gatilho*100).toFixed(0)}% vende ${(pct*100).toFixed(0)}% → ${destino}`;
+  document.getElementById('realizacao-list').innerHTML=`<div class="hodl-item"><div class="hodl-free-icon">⚡</div><div style="flex:1"><div class="hodl-ticker">${ticker}</div><div class="hodl-conta">${msg}</div></div></div>`+(document.getElementById('realizacao-list').innerHTML==='<div class="empty-state">Nenhuma regra configurada.</div>'?'':document.getElementById('realizacao-list').innerHTML);
+  document.getElementById('rea-ticker').value='';
+  toast('✅ Regra de realização configurada!');
+}
+
+// ── Corretoras ─────────────────────────────────────────
+async function configurarBroker(){
+  const exchange=document.getElementById('cfg-exchange').value,key=document.getElementById('cfg-key').value.trim(),secret=document.getElementById('cfg-secret').value.trim();
+  if(!key){toast('Cole a API Key','error');return;}
+  const res=await apiFetch('/hodl/broker/configurar','POST',{exchange,api_key:key,api_secret:secret});
+  const el=document.getElementById('cfg-resultado');
+  if(res){el.innerHTML=`<span style="color:var(--green)">✅ ${res.mensagem}</span>`;if(exchange==='binance') document.getElementById('binance-status').innerHTML='<span class="badge b-green">Conectada</span>';}
+  else el.innerHTML='<span style="color:var(--red)">❌ Erro. Verifique as keys.</span>';
+}
+async function testarConexao(){const exchange=document.getElementById('cfg-exchange').value;if(exchange==='binance') await testarBinance();else toast('Teste disponível para Binance','error');}
+async function testarBinance(){
+  const res=await apiFetch('/hodl/binance/ping');
+  const el=document.getElementById('binance-status');
+  if(res?.conectado) el.innerHTML='<span class="badge b-green">✅ Online</span>';
+  else if(res?.api_configurada===false) el.innerHTML='<span class="badge b-amber">⚠ Configure Key</span>';
+  else el.innerHTML='<span class="badge b-red">❌ Offline</span>';
+}
+async function carregarBinanceSaldo(){
+  const res=await apiFetch('/hodl/binance/saldo');
+  const el=document.getElementById('binance-saldo');
+  if(!res||res.erro){el.innerHTML=`<div style="font-size:11px;color:var(--accent3)">${res?.erro||'Configure API Keys'}</div>`;return;}
+  el.innerHTML=Object.entries(res).map(([k,v])=>`<div class="ind-row"><span class="ind-label">${k}</span><span class="ind-val">${v>100?fmtBRL(v):(+v).toFixed(6)+' '+k}</span></div>`).join('');
+}
+async function carregarCoinbaseSaldo(){
+  const res=await apiFetch('/hodl/coinbase/saldo');
+  const el=document.getElementById('coinbase-saldo');
+  if(!res||res.erro){el.innerHTML='<div style="font-size:11px;color:var(--accent3)">Configure API Key JWT/ECDSA acima</div>';return;}
+  el.innerHTML=Object.entries(res).map(([k,v])=>`<div class="ind-row"><span class="ind-label">${k}</span><span class="ind-val">${(+v).toFixed(6)}</span></div>`).join('');
+}
+async function carregarMetamaskSaldo(){
+  const address=document.getElementById('metamask-address').value.trim();
+  if(!address||!address.startsWith('0x')){toast('Endereço Ethereum inválido (0x...)','error');return;}
+  const el=document.getElementById('metamask-saldo');
+  el.innerHTML='<div style="font-size:11px;color:var(--t3)">Consultando blockchain...</div>';
+  const res=await apiFetch('/hodl/metamask/saldo/'+address);
+  if(!res){el.innerHTML='<div style="font-size:11px;color:var(--red)">Erro. Configure INFURA_PROJECT_ID no .env</div>';return;}
+  const saldos=res.saldos||{};
+  el.innerHTML=Object.entries(saldos).filter(([k])=>!k.endsWith('_hodl')).map(([k,v])=>`<div class="ind-row"><span class="ind-label">${k} ${saldos[k+'_hodl']?'🔒':''}</span><span class="ind-val">${typeof v==='number'?v.toFixed(6):v}</span></div>`).join('');
+}
+async function carregarToroSaldo(){
+  const res=await apiFetch('/hodl/toro/saldo');
+  if(!res)return;
+  document.getElementById('toro-saldo').innerHTML=Object.entries(res).map(([k,v])=>`<div class="ind-row"><span class="ind-label">${k}</span><span class="ind-val">${typeof v==='number'&&v>100?fmtBRL(v):typeof v==='number'?v.toFixed(4)+' un':v}</span></div>`).join('');
+}
+async function importarAvenue(input){
+  const file=input.files[0];if(!file)return;
+  const formData=new FormData();formData.append('file',file);
+  try{
+    const r=await fetch(API+'/hodl/avenue/import',{method:'POST',body:formData});
+    const res=await r.json();
+    const el=document.getElementById('avenue-posicoes');
+    if(res.importado){
+      el.innerHTML=`<div style="font-size:12px;color:var(--green);margin-bottom:8px">✅ ${res.total_posicoes} posições importadas · USD ${fmtBRL(res.valor_total_usd||0)}</div>`+
+        res.posicoes.map(p=>`<div class="ind-row"><span class="ind-label">${p.ticker} ${p.bloqueado?'🔒':''}</span><span class="ind-val">${p.quantidade} un · USD ${(p.valor_total||0).toFixed(2)}</span></div>`).join('');
+      toast('Avenue CSV importado!');
+    }
+  }catch(e){toast('Erro ao importar CSV','error');}
+}
+async function solicitar2FA(){
+  const userId=document.getElementById('tfa-user').value;
+  const operacao=document.getElementById('tfa-op').value;
+  const res=await apiFetch(`/auth/2fa/challenge?user_id=${userId}&operacao=${operacao}`,'POST');
+  if(!res)return;
+  document.getElementById('tfa-resultado').innerHTML=`
+    <div style="text-align:center">
+      <div style="font-size:10px;color:var(--t3);margin-bottom:8px">Token 2FA gerado</div>
+      <div style="font-size:44px;font-weight:800;font-family:var(--fm);color:var(--accent);letter-spacing:6px">${res.dev_token}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:8px">${res.expira_em}</div>
+      <div style="font-size:10px;color:var(--accent3);margin-top:5px">⚠️ Em produção: enviado por SMS</div>
+    </div>`;
+  toast('Token 2FA gerado!');
+}
+
+// ── Portfólio ──────────────────────────────────────────
+function renderPortfolio(){
+  const tbody=document.getElementById('portfolio-tbody');if(!tbody)return;
+  const COLORS={renda_var:'var(--rv)',renda_fixa:'var(--rf)',cripto:'var(--cri)',internacional:'var(--int)',fii:'var(--green)'};
+  tbody.innerHTML=ATIVOS.map(a=>{
+    const total=a.valor||(a.qtd*a.preco);
+    const ret=a.pm>0?(a.preco-a.pm)/a.pm:0;
+    const lock=hodlLocks.find(l=>l.ticker===a.ticker);
+    return`<tr style="cursor:pointer" onclick="showPage('tecnico',document.querySelectorAll('.nav-item')[4])">
+      <td style="font-weight:700;color:var(--text)">${a.ticker}</td>
+      <td><span class="tag" style="background:${COLORS[a.classe]||'#888'}18;color:${COLORS[a.classe]||'#888'}">${a.classe}</span></td>
+      <td style="font-family:var(--fm)">${a.qtd}</td>
+      <td style="font-family:var(--fm)">${fmtBRL(a.pm)}</td>
+      <td style="font-family:var(--fm)">${fmtBRL(a.preco)}</td>
+      <td style="color:${ret>=0?'var(--green)':'var(--red)'};font-weight:700;font-family:var(--fm)">${ret>=0?'+':''}${(ret*100).toFixed(1)}%</td>
+      <td>${lock?'<span class="badge b-red">🔒 HODL</span>':'<span style="color:var(--t3)">—</span>'}</td>
+    </tr>`;}).join('');
+  const dist={renda_fixa:0,renda_var:0,cripto:0,internacional:0,fii:0};
+  const total=ATIVOS.reduce((s,a)=>s+a.qtd*a.preco,0);
+  ATIVOS.forEach(a=>dist[a.classe]=(dist[a.classe]||0)+a.qtd*a.preco);
+  const pd=document.getElementById('p-alloc-dist');
+  if(pd) pd.innerHTML=Object.entries(dist).filter(([,v])=>v>0).map(([k,v])=>{
+    const pct=Math.round(v/total*100);
+    return`<div class="alloc-row">
+      <div class="alloc-dot" style="background:${COLORS[k]||'#888'}"></div>
+      <span style="flex:1;font-size:12px;color:var(--t2)">${k.replace('_',' ')}</span>
+      <div class="alloc-track" style="flex:2"><div class="alloc-fill" style="width:${pct}%;background:${COLORS[k]||'#888'}"></div></div>
+      <span style="font-size:12px;font-weight:700;font-family:var(--fm);min-width:40px;text-align:right">${pct}%</span>
+    </div>`;}).join('');
+}
+async function calcularVaR(){
+  const retornos={};ATIVOS.forEach(a=>{retornos[a.ticker]=Array.from({length:60},()=>(Math.random()-.48)/100*(a.classe==='cripto'?5:1.5));});
+  const pesos={};ATIVOS.forEach(a=>pesos[a.ticker]=Math.round((a.valor||a.qtd*a.preco)/(PATRIMONIO_REAL||247000)*100));
+  const res=await apiFetch('/tecnico/risco','POST',{retornos_ativos:retornos,pesos,patrimonio:PATRIMONIO_REAL||247000});
+  if(!res){toast('Backend offline','error');return;}
+  document.getElementById('p-var').textContent=res.var_95_pct?.toFixed(2)+'%';
+  document.getElementById('var-resultado').innerHTML=`
+    <div class="ind-row"><span class="ind-label">VaR 95% (1d)</span><span class="ind-val" style="color:var(--red)">${res.var_95_pct?.toFixed(2)}%</span></div>
+    <div class="ind-row"><span class="ind-label">VaR 99% (1d)</span><span class="ind-val" style="color:var(--red)">${res.var_99_pct?.toFixed(2)}%</span></div>
+    <div class="ind-row"><span class="ind-label">CVaR 95%</span><span class="ind-val" style="color:var(--accent3)">${res.cvar_95_pct?.toFixed(2)}%</span></div>
+    <div class="ind-row"><span class="ind-label">VaR em R$</span><span class="ind-val" style="color:var(--red)">${fmtBRL(res.var_portfolio_95_brl||0)}</span></div>
+    <div class="ind-row"><span class="ind-label">Sharpe</span><span class="ind-val">${res.sharpe?.toFixed(3)}</span></div>
+    <div class="ind-row"><span class="ind-label">Sortino</span><span class="ind-val">${res.sortino?.toFixed(3)}</span></div>
+    <div class="ind-row"><span class="ind-label">Max Drawdown</span><span class="ind-val" style="color:var(--red)">${res.max_drawdown?.toFixed(2)}%</span></div>`;
+  toast('VaR/CVaR calculado!');
+}
+
+// ── Dashboard alloc bars ───────────────────────────────
+function renderDashboard(){
+  const alloc=PERFIL_ALLOC.moderado_agressivo;
+  const strip=document.getElementById('d-alloc-strip');
+  if(strip) strip.innerHTML=Object.entries(alloc).map(([k,v])=>`<div style="flex:${v};background:${GENE_COLORS[k]||'#888'}"></div>`).join('');
+  const bars=document.getElementById('d-alloc-bars');
+  if(bars) bars.innerHTML=Object.entries(alloc).map(([k,v])=>`
+    <div class="alloc-row">
+      <div class="alloc-dot" style="background:${GENE_COLORS[k]}"></div>
+      <span style="flex:1;font-size:12.5px;color:var(--t2)">${k.replace('_',' ')}</span>
+      <div class="alloc-track"><div class="alloc-fill" style="width:${v}%;background:${GENE_COLORS[k]}"></div></div>
+      <span style="font-size:12px;font-weight:700;font-family:var(--fm);min-width:38px;text-align:right">${v}%</span>
+    </div>`).join('');
+  calcularStress();
+}
+
+// ── API check & Binance ────────────────────────────────
+async function verificarAPI(){
+  const res=await apiFetch('/');
+  const dot=document.getElementById('api-dot'),txt=document.getElementById('api-status-text');
+  if(res){dot.className='api-dot online';txt.textContent='Backend v'+(res.version||'3.0')+' online';}
+  else{dot.className='api-dot offline';txt.textContent='Backend offline';}
+}
+
+async function carregarPortfolioBinance(){
+  const saldo=await apiFetch('/hodl/binance/saldo');
+  if(!saldo||saldo.erro)return false;
+  const precos_brl={BTC:519000,ETH:18000,BNB:3500,SOL:1200,USDT:5.17,USDC:5.17};
+  ATIVOS=[];let total=0;
+  for(const[asset,qtd] of Object.entries(saldo)){
+    if(qtd<0.00001)continue;
+    let preco=precos_brl[asset]||1;
+    try{
+      if(['USDT','USDC','BUSD','DAI'].includes(asset)){const p=await apiFetch('/hodl/binance/preco/USDTBRL');if(p?.preco)preco=p.preco;}
+      else if(asset==='BNB'){const p=await apiFetch('/hodl/binance/preco/BNBUSDT');if(p?.preco){const u=await apiFetch('/hodl/binance/preco/USDTBRL');preco=p.preco*(u?.preco||5.17);}}
+      else{const p=await apiFetch('/hodl/binance/preco/'+asset+'USDT');if(p?.preco){const u=await apiFetch('/hodl/binance/preco/USDTBRL');preco=p.preco*(u?.preco||5.17);}}
+    }catch(e){}
+    const valor=qtd*preco;total+=valor;
+    ATIVOS.push({ticker:asset,classe:classificarAtivo(asset),qtd,pm:preco,preco,valor});
+  }
+  PATRIMONIO_REAL=total;
+  document.getElementById('d-patrimonio').textContent=fmtBRL(total);
+  const fp=document.getElementById('f-patrimonio');if(fp)fp.value=Math.round(total);
+  toast('Binance: '+ATIVOS.length+' ativos · '+fmtBRL(total));
+  return true;
+}
+
+async function carregarTudo(){
+  await verificarAPI();
+  await carregarHodlLocks();
+  const ok=await carregarPortfolioBinance();
+  if(!ok){
+    ATIVOS=[
+      {ticker:'BOVA11',classe:'renda_var',qtd:220,pm:128.40,preco:132.50,valor:29150},
+      {ticker:'Bitcoin',classe:'cripto',qtd:0.31,pm:480000,preco:519000,valor:160890},
+      {ticker:'IVVB11',classe:'internacional',qtd:180,pm:284.90,preco:298.40,valor:53712},
+      {ticker:'CDB 115%',classe:'renda_fixa',qtd:1,pm:48500,preco:48500,valor:48500},
+    ];
+    PATRIMONIO_REAL=ATIVOS.reduce((s,a)=>s+a.valor,0);
+    document.getElementById('d-patrimonio').textContent=fmtBRL(PATRIMONIO_REAL);
+  }
+  renderDashboard();renderPortfolio();
+  const pct=Math.min(100,Math.round(PATRIMONIO_REAL/1500000*100));
+  document.getElementById('d-fire-pct').textContent=pct+'%';
+  testarBinance();
+}
+
+carregarTudo();
+</script>
+</body>
+</html>
