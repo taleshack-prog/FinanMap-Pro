@@ -37,12 +37,8 @@ async def analise_tecnica(payload: AnaliseAtivoInput):
 @router.post("/risco", summary="VaR 95%/99% + CVaR + Sharpe + Sortino + Calmar")
 async def risco_portfolio(payload: RiscoPortfolioInput):
     try:
-        r = await calcular_risco_portfolio(payload.retornos_ativos, payload.pesos, payload.patrimonio)
-        return {"var_95_pct":r.var_95,"var_99_pct":r.var_99,"cvar_95_pct":r.cvar_95,
-                "cvar_99_pct":r.cvar_99,"var_portfolio_95_brl":r.var_portfolio_95,
-                "volatilidade_anual":r.volatilidade_anual,"beta":r.beta,
-                "max_drawdown":r.max_drawdown,"sharpe":r.sharpe,
-                "sortino":r.sortino,"calmar":r.calmar}
+        r = calcular_risco_portfolio(payload.retornos_ativos, payload.pesos, payload.patrimonio)
+        return r
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
