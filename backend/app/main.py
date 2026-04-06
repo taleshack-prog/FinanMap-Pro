@@ -46,3 +46,6 @@ async def health():
 from app.routers import hodl as hodl_router
 app.include_router(hodl_router.router, prefix='/api/v1/hodl', tags=['HODL + Corretoras'])
 
+from app.routers import state
+app.include_router(state.router)
+

@@ -1,0 +1,75 @@
+{
+  "contas": [
+    {
+      "id": "binance_seed",
+      "tipo": "cex",
+      "nome": "Binance",
+      "instituicao": "Binance",
+      "saldo_brl": 267.81,
+      "moeda": "USDT",
+      "classe": "cripto",
+      "conexao": "api",
+      "obs": "Configurada no .env",
+      "ultima_atualizacao": "2026-04-06T18:28:49.788Z",
+      "ativos": []
+    },
+    {
+      "id": "c_1775499703326",
+      "tipo": "banco_br",
+      "instituicao": "C6 Bank",
+      "nome": "C6 Bank",
+      "saldo_brl": 1687,
+      "moeda": "BRL",
+      "classe": "renda_fixa",
+      "conexao": "manual",
+      "obs": "CDB 102%",
+      "apikey": "",
+      "wallet_addr": "",
+      "wallet_rede": "ethereum",
+      "ultima_atualizacao": "2026-04-06T18:22:00.380Z",
+      "ativos": []
+    },
+    {
+      "id": "c_1775499930317",
+      "tipo": "banco_br",
+      "instituicao": "Outro Banco",
+      "nome": "Wise",
+      "saldo_brl": 247,
+      "moeda": "USD",
+      "classe": "internacional",
+      "conexao": "manual",
+      "obs": "dolares",
+      "apikey": "",
+      "wallet_addr": "",
+      "wallet_rede": "ethereum",
+      "ultima_atualizacao": "2026-04-06T18:25:56.922Z",
+      "ativos": []
+    }
+  ],
+  "historico_patrimonio": [
+    {
+      "d": "2026-04-06T15:36:06.188Z",
+      "v": 168.26
+    },
+    {
+      "d": "2026-04-06T18:20:15.817Z",
+      "v": 168.26
+    },
+    {
+      "d": "2026-04-06T18:22:00.383Z",
+      "v": 1855.26
+    },
+    {
+      "d": "2026-04-06T18:25:30.320Z",
+      "v": 1902.26
+    },
+    {
+      "d": "2026-04-06T18:25:56.925Z",
+      "v": 2102.26
+    },
+    {
+      "d": "2026-04-06T18:28:33.942Z",
+      "v": 2202.05
+    }
+  ]
+}

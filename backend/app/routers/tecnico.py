@@ -30,12 +30,7 @@ class StressTestInput(BaseModel):
 async def analise_tecnica(payload: AnaliseAtivoInput):
     try:
         r = analisar_ativo(payload.ticker, payload.precos, payload.volumes)
-        return {"ticker":r.ticker,"preco_atual":r.preco_atual,"rsi":r.rsi,
-                "macd":r.macd,"macd_signal":r.macd_signal,"macd_hist":r.macd_hist,
-                "bollinger":{"upper":r.bb_upper,"middle":r.bb_middle,"lower":r.bb_lower,"posicao":r.bb_posicao},
-                "medias":{"sma_20":r.sma_20,"sma_50":r.sma_50,"ema_9":r.ema_9},
-                "volume_ratio":r.volume_ratio,"tendencia":r.tendencia,
-                "sinal":r.sinal,"forca_sinal":r.forca_sinal,"score":r.score}
+        return r
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
