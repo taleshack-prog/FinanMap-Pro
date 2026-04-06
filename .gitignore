@@ -18,3 +18,7 @@ node_modules/
 # OS / Editor
 .DS_Store
 .vscode/
+
+# Runtime
+.backend.pid
+logs/
