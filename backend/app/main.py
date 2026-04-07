@@ -1,6 +1,6 @@
 """
 FinanMap Pro — Backend FastAPI v3
-Novidades: Auth JWT+2FA, GA 7 genes, RSI/MACD/Bollinger, VaR/CVaR, Robôs com execução
+Novidades: Auth JWT+2FA, GA 7 genes, RSI/MACD/Bollinger, VaR/CVaR, >
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -49,3 +49,5 @@ app.include_router(hodl_router.router, prefix='/api/v1/hodl', tags=['HODL + Corr
 from app.routers import state
 app.include_router(state.router)
 
+from app.routers import mercado
+app.include_router(mercado.router)

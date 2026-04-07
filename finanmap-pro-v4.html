@@ -350,7 +350,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="sec-sub">Binance · clique para análise técnica</div>
     <div style="overflow-x:auto;">
       <table class="data-table">
-        <thead><tr><th>Ativo</th><th>Classe</th><th>Qtd</th><th>Preço médio</th><th>Cotação</th><th>Retorno</th><th>HODL</th></tr></thead>
+        <thead><tr><th>Ativo</th><th>Classe</th><th>Qtd</th><th>Preço médio</th><th>Cotação</th><th>Valor BRL</th><th>Retorno</th><th>% Cart.</th><th>HODL</th></tr></thead>
         <tbody id="portfolio-tbody"></tbody>
       </table>
     </div>
@@ -500,37 +500,110 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <!-- ═══════════════════ ANÁLISE TÉCNICA ═══════════════════ -->
 <div id="page-tecnico" class="page">
-  <div class="card" style="max-width:480px;">
-    <div class="sec">Analisar ativo</div>
-    <div class="sec-sub">RSI · MACD · Bollinger · Z-Score · Hurst · Regime · CVD · OFI</div>
-    <div class="field"><label>Ticker</label>
-      <select id="t-ticker">
-        <option value="BOVA11">BOVA11 — ETF Ibovespa</option>
-        <option value="IVVB11">IVVB11 — ETF S&P500</option>
-        <option value="PETR4">PETR4 — Petrobras</option>
-        <option value="VALE3">VALE3 — Vale</option>
-        <option value="BTC">BTC — Bitcoin</option>
-      </select>
+
+  <!-- BARRA DE PESQUISA -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="sec">Pesquisar qualquer ativo</div>
+    <div class="sec-sub">Cripto · Ações BR · Ações EUA · ETFs · FIIs — dados em tempo real</div>
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <div style="flex:1;position:relative;">
+        <input type="text" id="t-busca" placeholder="Ex: BTC, NVDA, PETR4, HGLG11..."
+          style="width:100%;padding:10px 14px;font-size:14px;"
+          oninput="buscarSugestoes(this.value)"
+          onkeydown="if(event.key==='Enter') analisarMercado()"
+          autocomplete="off">
+        <div id="t-sugestoes" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:0 0 8px 8px;z-index:100;max-height:220px;overflow-y:auto;"></div>
+      </div>
+      <button class="btn btn-primary" onclick="analisarMercado()" id="btn-analisar" style="padding:10px 20px;white-space:nowrap;">
+        📊 Analisar
+      </button>
     </div>
-    <button class="btn btn-primary" onclick="analisarTecnico()" style="width:100%">📊 Analisar</button>
+    <!-- Sugestões rápidas -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
+      <span style="font-size:11px;color:var(--t3);margin-right:4px;">Populares:</span>
+      <span class="pill active" onclick="analisarRapido('BTC')">₿ BTC</span>
+      <span class="pill" onclick="analisarRapido('ETH')">ETH</span>
+      <span class="pill" onclick="analisarRapido('NVDA')">NVDA</span>
+      <span class="pill" onclick="analisarRapido('PETR4')">PETR4</span>
+      <span class="pill" onclick="analisarRapido('VALE3')">VALE3</span>
+      <span class="pill" onclick="analisarRapido('BOVA11')">BOVA11</span>
+      <span class="pill" onclick="analisarRapido('HGLG11')">HGLG11</span>
+      <span class="pill" onclick="analisarRapido('SOL')">SOL</span>
+    </div>
   </div>
+
+  <!-- LOADING -->
+  <div id="t-loading" style="display:none;text-align:center;padding:3rem;">
+    <div class="loading-spinner" style="width:32px;height:32px;border-width:3px;margin:0 auto 12px;"></div>
+    <div style="font-size:13px;color:var(--t2);">A buscar dados em tempo real...</div>
+  </div>
+
+  <!-- RESULTADO -->
   <div id="tecnico-resultado" style="display:none;">
-    <div class="grid4">
+
+    <!-- HEADER DO ATIVO -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-family:var(--fh);font-size:22px;font-weight:800;" id="t-nome-ticker">—</div>
+            <span class="badge b-blue" id="t-tipo-badge">—</span>
+          </div>
+          <div style="font-size:12px;color:var(--t3);margin-top:3px;" id="t-nome-completo">—</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--fm);font-size:26px;font-weight:700;color:var(--accent);" id="t-preco-atual">—</div>
+          <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:4px;">
+            <span style="font-size:12px;font-family:var(--fm);" id="t-var24h">—</span>
+            <span style="font-size:12px;color:var(--t3);">24h</span>
+            <span style="font-size:12px;font-family:var(--fm);" id="t-var30d">—</span>
+            <span style="font-size:12px;color:var(--t3);">30d</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs TÉCNICOS -->
+    <div class="grid4" style="margin-bottom:14px;">
       <div class="mc purple"><div class="mc-l">RSI (14)</div><div class="mc-v" id="t-rsi">—</div><div class="mc-s" id="t-rsi-sub">—</div></div>
       <div class="mc blue"><div class="mc-l">MACD Hist.</div><div class="mc-v" id="t-macd">—</div><div class="mc-s" id="t-macd-sub">—</div></div>
-      <div class="mc green"><div class="mc-l">Bollinger pos.</div><div class="mc-v" id="t-bb">—</div><div class="mc-s" id="t-bb-sub">—</div></div>
+      <div class="mc green"><div class="mc-l">Bollinger %B</div><div class="mc-v" id="t-bb">—</div><div class="mc-s" id="t-bb-sub">—</div></div>
       <div class="mc amber"><div class="mc-l">Score técnico</div><div class="mc-v" id="t-score">—</div><div class="mc-s">0–100</div></div>
     </div>
-    <div class="grid2">
-      <div class="card">
-        <div class="sec">Sinal unificado</div>
-        <div id="t-sinal-box" style="text-align:center;padding:1.25rem;"></div>
+
+    <div class="grid2" style="margin-bottom:14px;">
+      <!-- SINAL + INDICADORES -->
+      <div>
+        <div class="card" style="margin-bottom:14px;">
+          <div class="sec">Sinal unificado</div>
+          <div id="t-sinal-box" style="text-align:center;padding:1.25rem;"></div>
+        </div>
+        <div class="card">
+          <div class="sec">Indicadores detalhados</div>
+          <div id="t-indicadores"></div>
+        </div>
       </div>
-      <div class="card">
-        <div class="sec">Indicadores detalhados</div>
-        <div id="t-indicadores"></div>
+
+      <!-- ANÁLISE IA -->
+      <div class="card" style="border:1px solid rgba(139,92,246,.2);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#a78bfa;display:inline-block;" class="live"></span>
+          <div class="sec" style="margin:0;">Análise Claude AI</div>
+        </div>
+        <div id="t-ia-loading" style="display:none;text-align:center;padding:1rem;">
+          <div class="loading-spinner" style="margin:0 auto 8px;"></div>
+          <div style="font-size:11px;color:var(--t3);">A consultar Claude...</div>
+        </div>
+        <div id="t-ia-resultado" style="font-size:12.5px;line-height:1.8;color:var(--t2);white-space:pre-line;"></div>
       </div>
     </div>
+
+    <!-- GRÁFICO HISTÓRICO -->
+    <div class="card">
+      <div class="sec">Histórico de preços — 60 dias</div>
+      <canvas id="t-chart-historico" height="160"></canvas>
+    </div>
+
   </div>
 </div>
 
@@ -1005,7 +1078,7 @@ const pageTitles={
   portfolio:  ['Portfólio','Ativos · VaR/CVaR · distribuição'],
   fire:       ['FIRE Tracker','Monte Carlo 10k · Regra dos 4% · cenários'],
   robos:      ['Robôs & GA','7 genes · 5 estratégias · algoritmo genético'],
-  tecnico:    ['Análise Técnica','RSI · MACD · Bollinger · sinal unificado'],
+  tecnico:    ['Análise Técnica','Qualquer ativo · Dados reais · IA integrada'],
   ia:         ['IA Advisor','Claude API · Kelly · stress test · alertas'],
   contas:     ['Contas & Patrimônio','Bancos · CEX · Wallets · Corretoras · Previdência · tudo consolidado'],
   hodl:       ['HODL & Locks','Ativos intocáveis · realização parcial · 2FA'],
@@ -1311,39 +1384,205 @@ const PRECOS_MOCK={
   VALE3:[65,63,61,59,57,55,54,53,52,51,50,51,52,53,55,57,59,61,63,65,67,69,71,73,75,74,73],
   BTC:[450000,440000,430000,420000,410000,400000,390000,385000,380000,375000,370000,365000,370000,380000,390000,400000,410000,420000,430000,440000,450000,460000,470000,480000,490000,500000,519000],
 };
-async function analisarTecnico(){
-  const ticker=document.getElementById('t-ticker').value;
-  const precos=PRECOS_MOCK[ticker]||PRECOS_MOCK.BOVA11;
-  const res=await apiFetch('/tecnico/ativo','POST',{ticker,precos});
-  if(!res){toast('Backend offline','error');return;}
-  document.getElementById('tecnico-resultado').style.display='block';
-  const rsi=res.rsi;
-  document.getElementById('t-rsi').textContent=rsi.toFixed(1);
-  document.getElementById('t-rsi').style.color=rsi<30?'var(--green)':rsi>70?'var(--red)':'var(--accent3)';
-  document.getElementById('t-rsi-sub').textContent=rsi<30?'Oversold — compra':rsi>70?'Overbought — venda':'Neutro';
-  const macd=res.macd_hist;
-  document.getElementById('t-macd').textContent=(macd>=0?'+':'')+macd.toFixed(4);
-  document.getElementById('t-macd').style.color=macd>=0?'var(--green)':'var(--red)';
-  document.getElementById('t-macd-sub').textContent=macd>=0?'Momentum positivo':'Momentum negativo';
-  const bb=res.bollinger?.posicao||.5;
-  document.getElementById('t-bb').textContent=(bb*100).toFixed(0)+'%';
-  document.getElementById('t-bb').style.color=bb<.2?'var(--green)':bb>.8?'var(--red)':'var(--text)';
-  document.getElementById('t-bb-sub').textContent=bb<.2?'Próximo ao suporte':bb>.8?'Próximo à resistência':'Meio das bandas';
-  document.getElementById('t-score').textContent=res.score;
-  const sinal=res.sinal,forca=res.forca_sinal;
-  document.getElementById('t-sinal-box').innerHTML=`
-    <div class="signal-badge sig-${sinal}" style="font-size:17px;padding:9px 22px;display:inline-block;margin-bottom:12px">${sinal.toUpperCase()}</div>
-    <div style="font-size:12px;color:var(--t2)">Força: <b>${Math.round(forca*100)}%</b></div>
-    <div style="font-size:11px;color:var(--t3);margin-top:5px">${ticker} · ${fmtBRL(res.preco_atual)}</div>`;
-  document.getElementById('t-indicadores').innerHTML=`
-    <div class="ind-row"><span class="ind-label">SMA 20</span><span class="ind-val">${fmtBRL(res.medias?.sma_20||0)}</span></div>
-    <div class="ind-row"><span class="ind-label">SMA 50</span><span class="ind-val">${fmtBRL(res.medias?.sma_50||0)}</span></div>
-    <div class="ind-row"><span class="ind-label">EMA 9</span><span class="ind-val">${fmtBRL(res.medias?.ema_9||0)}</span></div>
-    <div class="ind-row"><span class="ind-label">Bollinger sup.</span><span class="ind-val">${fmtBRL(res.bollinger?.upper||0)}</span></div>
-    <div class="ind-row"><span class="ind-label">Bollinger inf.</span><span class="ind-val">${fmtBRL(res.bollinger?.lower||0)}</span></div>
-    <div class="ind-row"><span class="ind-label">Tendência</span><span class="ind-val">${res.tendencia}</span></div>`;
-  toast('Análise técnica '+ticker+' concluída!');
+// ── Análise Técnica com dados reais ──────────────────────────────
+
+let _sugestaoTimeout = null;
+
+async function buscarSugestoes(q){
+  clearTimeout(_sugestaoTimeout);
+  const div = document.getElementById('t-sugestoes');
+  if(!q || q.length < 1){ div.style.display='none'; return; }
+  _sugestaoTimeout = setTimeout(async ()=>{
+    const res = await apiFetch('/mercado/sugestoes?q='+encodeURIComponent(q));
+    if(!res || !res.sugestoes || !res.sugestoes.length){ div.style.display='none'; return; }
+    const TIPO_LABEL={cripto:'₿',acao_br:'🇧🇷',acao_eua:'🇺🇸',etf_br:'📊',etf_eua:'📊',fii:'🏢'};
+    div.style.display='block';
+    div.innerHTML = res.sugestoes.map(s=>`
+      <div onclick="selecionarSugestao('${s.ticker}')"
+        style="padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);"
+        onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <span>${TIPO_LABEL[s.tipo]||'📈'}</span>
+        <span style="font-weight:700;font-family:var(--fm);color:var(--text)">${s.ticker}</span>
+        <span style="font-size:11px;color:var(--t3);flex:1">${s.nome}</span>
+        <span style="font-size:10px;color:var(--t3)">${s.tipo.replace('_',' ')}</span>
+      </div>`).join('');
+  }, 250);
 }
+
+function selecionarSugestao(ticker){
+  document.getElementById('t-busca').value = ticker;
+  document.getElementById('t-sugestoes').style.display = 'none';
+  analisarMercado();
+}
+
+function analisarRapido(ticker){
+  document.getElementById('t-busca').value = ticker;
+  analisarMercado();
+}
+
+async function analisarMercado(){
+  const ticker = (document.getElementById('t-busca').value || '').trim().toUpperCase();
+  if(!ticker){ toast('Digite um ticker para analisar','error'); return; }
+
+  document.getElementById('t-sugestoes').style.display = 'none';
+  document.getElementById('t-loading').style.display = 'block';
+  document.getElementById('tecnico-resultado').style.display = 'none';
+  document.getElementById('btn-analisar').innerHTML = '<span class="loading-spinner"></span> Buscando...';
+  document.getElementById('btn-analisar').disabled = true;
+
+  const res = await apiFetch('/mercado/analisar','POST',{ticker, periodo:'3mo', com_ia:true});
+
+  document.getElementById('t-loading').style.display = 'none';
+  document.getElementById('btn-analisar').innerHTML = '📊 Analisar';
+  document.getElementById('btn-analisar').disabled = false;
+
+  if(!res){ toast('Erro ao analisar '+ticker,'error'); return; }
+
+  // Mostrar resultado
+  document.getElementById('tecnico-resultado').style.display = 'block';
+
+  // Header
+  const TIPO_LABEL={cripto:'Cripto',acao_br:'Ação BR',acao_eua:'Ação EUA',etf_br:'ETF BR',etf_eua:'ETF EUA',fii:'FII'};
+  document.getElementById('t-nome-ticker').textContent = res.ticker;
+  document.getElementById('t-nome-completo').textContent = res.nome_completo + (res.setor&&res.setor!=='—'?' · '+res.setor:'');
+  document.getElementById('t-tipo-badge').textContent = TIPO_LABEL[res.tipo]||res.tipo;
+
+  // Preço
+  const moeda = res.moeda==='BRL'?'R$':'$';
+  const preco = res.preco_atual;
+  document.getElementById('t-preco-atual').textContent = moeda + (preco>1000?preco.toLocaleString('pt-BR',{minimumFractionDigits:2}):preco.toFixed(preco<0.01?6:2));
+
+  const v24 = res.variacao_24h||0;
+  const v30 = res.variacao_30d||0;
+  const el24 = document.getElementById('t-var24h');
+  const el30 = document.getElementById('t-var30d');
+  el24.textContent = (v24>=0?'+':'')+v24.toFixed(2)+'%';
+  el24.style.color = v24>=0?'var(--green)':'var(--red)';
+  el30.textContent = (v30>=0?'+':'')+v30.toFixed(2)+'%';
+  el30.style.color = v30>=0?'var(--green)':'var(--red)';
+
+  // KPIs técnicos
+  const t = res.tecnica||{};
+  const rsi = t.rsi||50;
+  document.getElementById('t-rsi').textContent = rsi.toFixed(1);
+  document.getElementById('t-rsi').style.color = rsi<30?'var(--green)':rsi>70?'var(--red)':'var(--accent3)';
+  document.getElementById('t-rsi-sub').textContent = rsi<30?'Oversold 🟢':rsi>70?'Overbought ⚠️':'Neutro';
+
+  const macd = t.macd_hist||0;
+  document.getElementById('t-macd').textContent = (macd>=0?'+':'')+macd.toFixed(4);
+  document.getElementById('t-macd').style.color = macd>=0?'var(--green)':'var(--red)';
+  document.getElementById('t-macd-sub').textContent = macd>=0?'Momentum positivo':'Momentum negativo';
+
+  const bb = t.bollinger?.posicao||0.5;
+  document.getElementById('t-bb').textContent = (bb*100).toFixed(0)+'%';
+  document.getElementById('t-bb').style.color = bb<0.2?'var(--green)':bb>0.8?'var(--red)':'var(--text)';
+  document.getElementById('t-bb-sub').textContent = bb<0.2?'Próximo suporte':bb>0.8?'Próximo resistência':'Meio das bandas';
+
+  document.getElementById('t-score').textContent = t.score_100||Math.round(Math.abs(t.score||0)*100);
+
+  // Sinal
+  const sinal = t.sinal||'neutro';
+  const forca = t.forca_sinal||0;
+  const SINAL_COLORS={compra:'var(--green)',venda:'var(--red)',neutro:'var(--t2)'};
+  document.getElementById('t-sinal-box').innerHTML = `
+    <div class="signal-badge sig-${sinal}" style="font-size:18px;padding:10px 26px;display:inline-block;margin-bottom:12px;">${sinal.toUpperCase()}</div>
+    <div style="font-size:12px;color:var(--t2);">Força: <b style="color:${SINAL_COLORS[sinal]||'var(--t2)'}">${(forca*100).toFixed(0)}%</b></div>
+    <div style="font-size:11px;color:var(--t3);margin-top:5px;">${res.ticker} · Regime: ${t.regime||'—'} · Hurst: ${(t.hurst||0).toFixed(2)}</div>
+    ${t.estrategia_recomendada?'<div style="margin-top:8px;"><span class="badge b-teal">'+t.estrategia_recomendada+'</span></div>':''}`;
+
+  // Indicadores
+  document.getElementById('t-indicadores').innerHTML = `
+    <div class="ind-row"><span class="ind-label">SMA 20</span><span class="ind-val">${moeda}${(t.medias?.sma_20||0).toFixed(2)}</span></div>
+    <div class="ind-row"><span class="ind-label">SMA 50</span><span class="ind-val">${moeda}${(t.medias?.sma_50||0).toFixed(2)}</span></div>
+    <div class="ind-row"><span class="ind-label">EMA 9</span><span class="ind-val">${moeda}${(t.medias?.ema_9||0).toFixed(2)}</span></div>
+    <div class="ind-row"><span class="ind-label">Bollinger sup.</span><span class="ind-val">${moeda}${(t.bollinger?.upper||0).toFixed(2)}</span></div>
+    <div class="ind-row"><span class="ind-label">Bollinger inf.</span><span class="ind-val">${moeda}${(t.bollinger?.lower||0).toFixed(2)}</span></div>
+    <div class="ind-row"><span class="ind-label">Z-Score</span><span class="ind-val">${(t.zscore||0).toFixed(2)}</span></div>
+    <div class="ind-row"><span class="ind-label">Tendência</span><span class="ind-val">${t.tendencia||'—'}</span></div>
+    <div class="ind-row"><span class="ind-label">Variação 24h</span><span class="ind-val" style="color:${v24>=0?'var(--green)':'var(--red)'}">${(v24>=0?'+':'')+v24.toFixed(2)}%</span></div>
+    ${res.pe_ratio?'<div class="ind-row"><span class="ind-label">P/L</span><span class="ind-val">'+res.pe_ratio.toFixed(1)+'x</span></div>':''}
+    ${res.dividend_yield?'<div class="ind-row"><span class="ind-label">Dividend Yield</span><span class="ind-val">'+(res.dividend_yield*100).toFixed(2)+'%</span></div>':''}`;
+
+  // IA
+  const iaDiv = document.getElementById('t-ia-resultado');
+  if(res.analise_ia){
+    iaDiv.textContent = res.analise_ia;
+  } else {
+    iaDiv.innerHTML = '<span style="color:var(--t3);font-size:11px;">Configure ANTHROPIC_API_KEY no .env para análise IA</span>';
+  }
+
+  // Gráfico histórico
+  desenharGraficoHistorico(res.precos_historico||[], res.datas_historico||[], res.ticker, moeda);
+
+  toast('✓ '+res.ticker+' · '+res.nome_completo);
+}
+
+// Alias para compatibilidade
+async function analisarTecnico(){ await analisarMercado(); }
+
+function desenharGraficoHistorico(precos, datas, ticker, moeda){
+  const canvas = document.getElementById('t-chart-historico');
+  if(!canvas || !precos.length) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 700;
+  canvas.height = 160;
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const maxV = Math.max(...precos);
+  const minV = Math.min(...precos)*0.998;
+  const range = maxV - minV || 1;
+  const pad = 40;
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const y=H-pad-(f*(H-pad*2));
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-10,y);ctx.stroke();
+    ctx.fillStyle='#525870';ctx.font='9px JetBrains Mono';ctx.textAlign='right';
+    ctx.fillText(moeda+(minV+f*range).toFixed(minV<1?4:2),pad-3,y+3);
+  });
+
+  // Área
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(0,212,170,0.2)');
+  grad.addColorStop(1,'rgba(0,212,170,0)');
+  ctx.beginPath();
+  precos.forEach((p,i)=>{
+    const x=pad+(i/(precos.length-1))*(W-pad-10);
+    const y=H-pad-((p-minV)/range)*(H-pad*2);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.lineTo(W-10,H-pad);ctx.lineTo(pad,H-pad);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+
+  // Linha
+  ctx.beginPath();
+  precos.forEach((p,i)=>{
+    const x=pad+(i/(precos.length-1))*(W-pad-10);
+    const y=H-pad-((p-minV)/range)*(H-pad*2);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='#00d4aa';ctx.lineWidth=1.5;ctx.stroke();
+
+  // Labels datas
+  ctx.fillStyle='#525870';ctx.font='9px JetBrains Mono';ctx.textAlign='center';
+  [0,0.25,0.5,0.75,1].forEach(f=>{
+    const idx=Math.round(f*(datas.length-1));
+    if(datas[idx]){
+      const x=pad+f*(W-pad-10);
+      ctx.fillText(datas[idx].slice(5),x,H-5);
+    }
+  });
+}
+
+// Fechar sugestões ao clicar fora
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#t-busca')&&!e.target.closest('#t-sugestoes')){
+    const div=document.getElementById('t-sugestoes');
+    if(div) div.style.display='none';
+  }
+});
 
 // ── IA Advisor ─────────────────────────────────────────
 async function carregarIA(){
@@ -1499,31 +1738,92 @@ async function solicitar2FA(){
 }
 
 // ── Portfólio ──────────────────────────────────────────
+async function carregarEMostrarPortfolio(){
+  // Recarregar contas do backend sempre que entrar no portfólio
+  await carregarContasSalvas();
+  // Buscar saldo Binance actualizado
+  const ok = await carregarPortfolioBinance();
+  if(!ok && !ATIVOS.length){
+    ATIVOS=[
+      {ticker:'BOVA11',classe:'renda_var',qtd:220,pm:128.40,preco:132.50,valor:29150},
+      {ticker:'Bitcoin',classe:'cripto',qtd:0.31,pm:480000,preco:519000,valor:160890},
+      {ticker:'IVVB11',classe:'internacional',qtd:180,pm:284.90,preco:298.40,valor:53712},
+      {ticker:'CDB 115%',classe:'renda_fixa',qtd:1,pm:48500,preco:48500,valor:48500},
+    ];
+    PATRIMONIO_REAL=ATIVOS.reduce((s,a)=>s+a.valor,0);
+  }
+  renderPortfolio();
+  atualizarDashboardContas();
+}
+
+// Constrói lista unificada: Binance (ATIVOS) + Contas manuais (CONTAS)
+function getAtivosUnificados(){
+  const lista = [...ATIVOS]; // começa com ativos Binance
+
+  // Adicionar contas manuais que não sejam Binance
+  CONTAS.forEach(conta => {
+    if(conta.instituicao === 'Binance') return; // já está em ATIVOS
+    if(!conta.saldo_brl || conta.saldo_brl <= 0) return; // ignorar vazias
+
+    lista.push({
+      ticker: conta.nome,
+      classe: conta.classe || 'renda_fixa',
+      qtd: 1,
+      pm: conta.saldo_brl,
+      preco: conta.saldo_brl,
+      valor: conta.saldo_brl,
+      conta: conta.nome,
+      instituicao: conta.instituicao,
+      conexao: conta.conexao,
+      manual: true
+    });
+  });
+
+  return lista;
+}
+
+function fmtQtd(n){
+  if(!n) return '0';
+  if(n>=1) return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4});
+  return n.toFixed(8).replace(/0+$/,'');
+}
+
 function renderPortfolio(){
   const tbody=document.getElementById('portfolio-tbody');if(!tbody)return;
-  const COLORS={renda_var:'var(--rv)',renda_fixa:'var(--rf)',cripto:'var(--cri)',internacional:'var(--int)',fii:'var(--green)'};
-  const todosAtivos=getAtivosUnificados();
-  const patTotal=todosAtivos.reduce((s,a)=>s+(a.valor||a.qtd*a.preco),0);
+  const COLORS={renda_var:'var(--rv)',renda_fixa:'var(--rf)',cripto:'var(--cri)',internacional:'var(--int)',fii:'var(--green)',previdencia:'#e879f9',imovel:'#fb923c',outro:'var(--t2)'};
+
+  const todosAtivos = getAtivosUnificados();
+
+  if(!todosAtivos.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:2rem;">A carregar dados... (certifique-se que o backend está activo)</td></tr>';
+    return;
+  }
+
+  const patrimonioTotal=todosAtivos.reduce((s,a)=>s+(a.valor||a.qtd*a.preco),0);
+
   tbody.innerHTML=todosAtivos.map(a=>{
     const valorBRL=a.valor||(a.qtd*a.preco);
-    const pctPort=patTotal>0?Math.round(valorBRL/patTotal*100):0;
-    const ret=!a.manual&&a.pm>0&&a.pm!==a.preco?(a.preco-a.pm)/a.pm:0;
-    const nomeCell=a.manual?`<div style="font-weight:700">${a.ticker}</div><div style="font-size:10px;color:var(--t3)">${a.instituicao||''}</div>`:`<b>${a.ticker}</b>`;
+    const ret=a.pm>0&&a.pm!==a.preco?(a.preco-a.pm)/a.pm:0;
+    const pctPortfolio=patrimonioTotal>0?Math.round(valorBRL/patrimonioTotal*100):0;
     const lock=hodlLocks.find(l=>l.ticker===a.ticker);
+    const nomeExibir = a.manual
+      ? `<div style="font-weight:700;color:var(--text)">${a.ticker}</div><div style="font-size:10px;color:var(--t3)">${a.instituicao||''} · ${a.conexao||'manual'}</div>`
+      : `<span style="font-weight:700;color:var(--text)">${a.ticker}</span>`;
     return`<tr>
-      <td>${nomeCell}</td>
+      <td>${nomeExibir}</td>
       <td><span class="tag" style="background:${COLORS[a.classe]||'#888'}18;color:${COLORS[a.classe]||'#888'}">${(a.classe||'').replace('_',' ')}</span></td>
-      <td style="font-family:var(--fm);color:var(--t2)">${a.manual?'—':a.qtd}</td>
-      <td style="font-family:var(--fm);color:var(--t2)">${!a.manual&&a.pm!==a.preco?fmtBRL(a.pm):'—'}</td>
-      <td style="font-family:var(--fm)">${a.manual?'—':fmtBRL(a.preco)}</td>
+      <td style="font-family:var(--fm);font-size:12px;color:var(--t2)">${a.manual?'—':fmtQtd(a.qtd)}</td>
+      <td style="font-family:var(--fm);color:var(--t2)">${a.pm&&a.pm!==a.preco&&!a.manual?fmtBRL(a.pm):'—'}</td>
+      <td style="font-family:var(--fm);font-weight:600">${a.manual?'—':fmtBRL(a.preco)}</td>
       <td style="font-family:var(--fm);font-weight:700;color:var(--accent)">${fmtBRL(valorBRL)}</td>
-      <td style="color:${ret>=0?'var(--green)':'var(--red)'};font-family:var(--fm)">${ret!==0?(ret>=0?'+':'')+(ret*100).toFixed(1)+'%':'—'}</td>
-      <td style="font-family:var(--fm);color:var(--t2)">${pctPort}%</td>
+      <td style="color:${ret>=0?'var(--green)':'var(--red)'};font-weight:700;font-family:var(--fm)">${ret!==0&&!a.manual?(ret>=0?'+':'')+(ret*100).toFixed(1)+'%':'—'}</td>
+      <td style="font-family:var(--fm);color:var(--t2)">${pctPortfolio}%</td>
       <td>${lock?'<span class="badge b-red">🔒</span>':'<span style="color:var(--t3)">—</span>'}</td>
     </tr>`;}).join('');
-  const dist={renda_fixa:0,renda_var:0,cripto:0,internacional:0,fii:0};
-  const total=ATIVOS.reduce((s,a)=>s+a.qtd*a.preco,0);
-  ATIVOS.forEach(a=>dist[a.classe]=(dist[a.classe]||0)+a.qtd*a.preco);
+  const dist={renda_fixa:0,renda_var:0,cripto:0,internacional:0,fii:0,previdencia:0,imovel:0,outro:0};
+  const todosParaDist = getAtivosUnificados();
+  const total=todosParaDist.reduce((s,a)=>s+(a.valor||a.qtd*a.preco),0);
+  todosParaDist.forEach(a=>dist[a.classe]=(dist[a.classe]||0)+(a.valor||a.qtd*a.preco));
   const pd=document.getElementById('p-alloc-dist');
   if(pd) pd.innerHTML=Object.entries(dist).filter(([,v])=>v>0).map(([k,v])=>{
     const pct=Math.round(v/total*100);
@@ -1535,9 +1835,11 @@ function renderPortfolio(){
     </div>`;}).join('');
 }
 async function calcularVaR(){
-  const retornos={};ATIVOS.forEach(a=>{retornos[a.ticker]=Array.from({length:60},()=>(Math.random()-.48)/100*(a.classe==='cripto'?5:1.5));});
-  const pesos={};ATIVOS.forEach(a=>pesos[a.ticker]=Math.round((a.valor||a.qtd*a.preco)/(PATRIMONIO_REAL||247000)*100));
-  const res=await apiFetch('/tecnico/risco','POST',{retornos_ativos:retornos,pesos,patrimonio:PATRIMONIO_REAL||247000});
+  const todosVaR = getAtivosUnificados();
+  const patTotal = todosVaR.reduce((s,a)=>s+(a.valor||a.qtd*a.preco),0)||PATRIMONIO_REAL||247000;
+  const retornos={};todosVaR.forEach(a=>{retornos[a.ticker]=Array.from({length:60},()=>(Math.random()-.48)/100*(a.classe==='cripto'?5:1.5));});
+  const pesos={};todosVaR.forEach(a=>pesos[a.ticker]=Math.round((a.valor||a.qtd*a.preco)/patTotal*100));
+  const res=await apiFetch('/tecnico/risco','POST',{retornos_ativos:retornos,pesos,patrimonio:patTotal});
   if(!res){toast('Backend offline','error');return;}
   document.getElementById('p-var').textContent=res.var_95_pct?.toFixed(2)+'%';
   document.getElementById('var-resultado').innerHTML=`
@@ -1609,24 +1911,38 @@ const CONTA_CLASSE={banco_br:'renda_fixa',corretora_br:'renda_var',corretora_eua
 const CEX_COM_API=['Binance','Bybit','OKX','Kraken','KuCoin','Crypto.com','Coinbase','Gate.io'];
 const CORRETORAS_CSV=['Avenue','Interactive Brokers','TD Ameritrade','Charles Schwab','XP Investimentos','Rico','Clear','BTG Pactual','Ágora','Toro'];
 
-// Carregar contas do backend
+// ── Storage persistente via backend ─────────────────
+// Guarda em ficheiro JSON no backend — persiste entre sessões
+
 let CONTAS = [];
 
 async function carregarContasSalvas(){
-  try{
+  try {
     const res = await apiFetch('/state/contas');
-    if(res && res.found && Array.isArray(res.value)) CONTAS = res.value;
-  }catch(e){}
+    if(res && res.found && Array.isArray(res.value)){
+      CONTAS = res.value;
+    }
+  } catch(e){}
+  // Carregar histórico patrimonial
+  try {
+    const hist = await apiFetch('/state/historico_patrimonio');
+    if(hist && hist.found && Array.isArray(hist.value)){
+      window._hist_patrimonio = hist.value;
+    }
+  } catch(e){}
+
   if(!CONTAS.find(c=>c.instituicao==='Binance')){
-    CONTAS.push({id:'binance_seed',tipo:'cex',nome:'Binance',instituicao:'Binance',saldo_brl:0,moeda:'USDT',classe:'cripto',conexao:'api',obs:'Configurada no .env',ultima_atualizacao:new Date().toISOString(),ativos:[]});
+    CONTAS.push({id:'binance_seed',tipo:'cex',nome:'Binance',
+      instituicao:'Binance',saldo_brl:0,moeda:'USDT',classe:'cripto',
+      conexao:'api',obs:'Configurada no .env',
+      ultima_atualizacao:new Date().toISOString(),ativos:[]});
     await salvarContasLocal();
   }
 }
 
 async function salvarContasLocal(){
-  await apiFetch('/state/','POST',{key:'contas',value:CONTAS});
+  await apiFetch('/state/', 'POST', {key:'contas', value: CONTAS});
 }
-
 
 function totalPatrimonioBRL(){
   return CONTAS.reduce((s,c)=>s+(c.saldo_brl||0),0);
@@ -1777,7 +2093,60 @@ function editarSaldo(id){
   toast('Saldo de '+conta.nome+' atualizado: '+fmtBRL(val));
 }
 
+async function renderContas(){
+  // Garantir que contas estão carregadas do backend
+  if(!CONTAS.length) await carregarContasSalvas();
+  const lista=document.getElementById('contas-lista');
+  if(!lista) return;
 
+  if(!CONTAS.length){
+    lista.innerHTML='<div class="empty-state">Nenhuma conta adicionada.<br>Clique em + Adicionar conta para começar.</div>';
+    return;
+  }
+
+  // Agrupar por tipo
+  const grupos={banco_br:[],corretora_br:[],corretora_eua:[],cex:[],wallet:[],previdencia:[],tesouro:[],imovel:[],outro:[]};
+  const nomeGrupo={banco_br:'Bancos BR',corretora_br:'Corretoras BR',corretora_eua:'Corretoras EUA',cex:'CEX Cripto',wallet:'Wallets',previdencia:'Previdência / FGTS',tesouro:'Tesouro Direto',imovel:'Imóveis',outro:'Outros'};
+  CONTAS.forEach(c=>{ if(grupos[c.tipo]) grupos[c.tipo].push(c); else grupos.outro.push(c); });
+
+  let html='';
+  for(const[tipo,contas] of Object.entries(grupos)){
+    if(!contas.length) continue;
+    const totalGrupo=contas.reduce((s,c)=>s+(c.saldo_brl||0),0);
+    html+=`<div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;">${CONTA_ICONS[tipo]||'💼'} ${nomeGrupo[tipo]||tipo}</div>
+        <div style="font-size:12px;font-weight:700;font-family:var(--fm);color:${CONTA_COLORS[tipo]||'var(--t2)'};">${fmtBRL(totalGrupo)}</div>
+      </div>`;
+    contas.forEach(c=>{
+      const dtAgo=c.ultima_atualizacao?tempoAtras(c.ultima_atualizacao):'nunca';
+      const conexaoBadge=c.conexao==='api'?`<span class="badge b-green">API</span>`:c.conexao==='wallet'?`<span class="badge b-teal">Wallet</span>`:c.conexao==='csv'?`<span class="badge b-blue">CSV</span>`:`<span class="badge" style="background:var(--bg4);color:var(--t3);">Manual</span>`;
+      html+=`
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:${CONTA_COLORS[c.tipo]||'var(--bg4)'}18;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${CONTA_ICONS[c.tipo]||'💼'}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">${c.nome}</div>
+            <div style="font-size:10.5px;color:var(--t3);font-family:var(--fm);">${c.classe.replace('_',' ')} · atualizado ${dtAgo}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:15px;font-weight:700;font-family:var(--fm);color:${c.saldo_brl>0?'var(--text)':'var(--t3)'};">${fmtBRL(c.saldo_brl||0)}</div>
+            <div style="margin-top:4px;">${conexaoBadge}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+            <button onclick="atualizarSaldoConta('${c.id}')" class="btn btn-sm btn-ghost" style="padding:3px 8px;font-size:10px;" title="Atualizar">↻</button>
+            <button onclick="editarSaldo('${c.id}')" class="btn btn-sm" style="padding:3px 8px;font-size:10px;" title="Editar saldo">✏️</button>
+            <button onclick="removerConta('${c.id}')" class="btn btn-sm btn-danger" style="padding:3px 8px;font-size:10px;" title="Remover">×</button>
+          </div>
+        </div>`;
+    });
+    html+='</div>';
+  }
+  lista.innerHTML=html;
+
+  // Atualizar KPIs
+  atualizarDashboardContas();
+  desenharGraficoContas();
+}
 
 function tempoAtras(iso){
   const diff=Math.floor((Date.now()-new Date(iso))/1000);
@@ -1787,9 +2156,86 @@ function tempoAtras(iso){
   return Math.floor(diff/86400)+'d';
 }
 
+function atualizarDashboardContas(){
+  const total=totalPatrimonioBRL();
+  const dist=totalPorClasse();
+  const cripto=(dist.cripto||0);
+  const rf=(dist.renda_fixa||0)+(dist.previdencia||0)+(dist.tesouro||0);
+  const rv=(dist.renda_var||0)+(dist.internacional||0);
 
+  // KPIs da página contas
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('ct-total',fmtBRL(total));
+  set('ct-contas',CONTAS.length);
+  set('ct-cripto',fmtBRL(cripto));
+  set('ct-cripto-pct',total>0?Math.round(cripto/total*100)+'% do total':'—');
+  set('ct-rf',fmtBRL(rf));
+  set('ct-rf-pct',total>0?Math.round(rf/total*100)+'% do total':'—');
+  set('ct-rv',fmtBRL(rv));
+  set('ct-rv-pct',total>0?Math.round(rv/total*100)+'% do total':'—');
 
+  // FIRE bar
+  const meta=1500000;
+  const pct=Math.min(100,Math.round(total/meta*100));
+  const anos=(total>0)?((Math.log(meta/total)/Math.log(1+0.25/12)/12)).toFixed(1):'—';
+  set('ct-fire-atual',fmtBRL(total)+' atual');
+  set('ct-fire-pct',pct+'% completo');
+  set('ct-fire-anos',anos!=='—'?anos+' anos estimados':'configure aportes no FIRE Tracker');
+  const barEl=document.getElementById('ct-fire-bar');
+  if(barEl) barEl.style.width=pct+'%';
 
+  // Atualizar dashboard principal
+  if(total>0){
+    const dpat=document.getElementById('d-patrimonio');
+    if(dpat) dpat.textContent=fmtBRL(total);
+    PATRIMONIO_REAL=total;
+  }
+}
+
+function desenharGraficoContas(){
+  const canvas=document.getElementById('ct-chart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth||300;
+  canvas.height=180;
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const dist=totalPorClasse();
+  const total=Object.values(dist).reduce((a,b)=>a+b,0);
+  if(!total){ctx.fillStyle='var(--t3)';ctx.font='12px DM Sans';ctx.textAlign='center';ctx.fillText('Adicione contas para ver o gráfico',W/2,H/2);return;}
+
+  const CORES={cripto:'#f59e0b',renda_fixa:'#3b9eff',renda_var:'#8b5cf6',internacional:'#10b981',previdencia:'#e879f9',imovel:'#fb923c',outro:'#64748b'};
+  const LABELS={cripto:'Cripto',renda_fixa:'Renda Fixa/Bancos',renda_var:'Renda Variável',internacional:'Internacional',previdencia:'Previdência/FGTS',imovel:'Imóvel',outro:'Outros'};
+
+  const fatias=Object.entries(dist).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const cx=W/2, cy=H/2-10, r=70;
+  let ang=-Math.PI/2;
+
+  fatias.forEach(([tipo,val])=>{
+    const sweep=(val/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,ang,ang+sweep);ctx.closePath();
+    ctx.fillStyle=CORES[tipo]||'#64748b';ctx.fill();
+    ang+=sweep;
+  });
+  // Buraco central
+  ctx.beginPath();ctx.arc(cx,cy,40,0,Math.PI*2);ctx.fillStyle='#0f1117';ctx.fill();
+  ctx.fillStyle='#8890a8';ctx.font='10px DM Sans';ctx.textAlign='center';ctx.fillText('Total',cx,cy-4);
+  ctx.fillStyle='#dde1ec';ctx.font='bold 13px DM Sans';ctx.fillText(fmtBRL(total),cx,cy+12);
+
+  // Legenda
+  const leg=document.getElementById('ct-legenda');
+  if(leg) leg.innerHTML=fatias.map(([tipo,val])=>`
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:10px;height:10px;border-radius:2px;background:${CORES[tipo]||'#888'};flex-shrink:0;"></div>
+      <span style="flex:1;font-size:11px;color:var(--t2);">${LABELS[tipo]||tipo}</span>
+      <span style="font-size:11px;font-weight:700;font-family:var(--fm);color:${CORES[tipo]||'var(--t2)'};">${fmtBRL(val)}</span>
+      <span style="font-size:10px;color:var(--t3);">${Math.round(val/total*100)}%</span>
+    </div>`).join('');
+
+  // Gráfico de evolução (histórico simulado com localStorage)
+  desenharEvolucao();
+}
 
 function desenharEvolucao(){
   const canvas=document.getElementById('ct-evolucao');
@@ -1801,19 +2247,20 @@ function desenharEvolucao(){
   ctx.clearRect(0,0,W,H);
 
   // Histórico: guardar snapshot do total a cada visita
-  if(!window._hist) window._hist=[];
-  let hist=window._hist;
+  // Histórico em memória por sessão (persiste entre páginas, não entre sessões)
+  if(!window._hist_patrimonio) window._hist_patrimonio=[];
+  let hist=window._hist_patrimonio;
   const total=totalPatrimonioBRL();
   if(total>0){
     const agora=new Date().toISOString();
-    // Só adicionar se mudou mais de 1% ou passaram mais de 1h
     const ultimo=hist[hist.length-1];
     const diff=ultimo?Math.abs(total-ultimo.v)/ultimo.v:1;
     const tempo=ultimo?(Date.now()-new Date(ultimo.d))/3600000:99;
-    if(!ultimo||diff>0.01||tempo>1){
+    if(!ultimo||diff>0.01||tempo>0.1){
       hist.push({d:agora,v:total});
-      hist=hist.slice(-30); // Manter últimos 30 pontos
-      window._hist=hist;
+      window._hist_patrimonio=hist.slice(-30);
+      // Guardar histórico no backend também
+      apiFetch('/state/', 'POST', {key:'historico_patrimonio', value: hist.slice(-30)}).catch(()=>{});
     }
   }
   if(hist.length<2){
@@ -1858,93 +2305,10 @@ function desenharEvolucao(){
   ctx.fillText(fmtBRL(maxV),W-2,14);
 }
 
-
-function getAtivosUnificados(){
-  const lista=[...ATIVOS];
-  CONTAS.forEach(conta=>{
-    if(conta.instituicao==='Binance') return;
-    if(!conta.saldo_brl||conta.saldo_brl<=0) return;
-    lista.push({ticker:conta.nome,classe:conta.classe||'renda_fixa',qtd:1,pm:conta.saldo_brl,preco:conta.saldo_brl,valor:conta.saldo_brl,instituicao:conta.instituicao,conexao:conta.conexao,manual:true});
-  });
-  return lista;
-}
-
-function atualizarDashboardContas(){
-  const total=CONTAS.reduce((s,c)=>s+(c.saldo_brl||0),0);
-  const dist={renda_fixa:0,renda_var:0,cripto:0,internacional:0,previdencia:0,imovel:0,outro:0};
-  CONTAS.forEach(c=>dist[c.classe]=(dist[c.classe]||0)+(c.saldo_brl||0));
-  const cripto=dist.cripto||0;
-  const rf=(dist.renda_fixa||0)+(dist.previdencia||0)+(dist.tesouro||0);
-  const rv=(dist.renda_var||0)+(dist.internacional||0);
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('ct-total',fmtBRL(total));set('ct-contas',CONTAS.length);
-  set('ct-cripto',fmtBRL(cripto));set('ct-cripto-pct',total>0?Math.round(cripto/total*100)+'%':'—');
-  set('ct-rf',fmtBRL(rf));set('ct-rf-pct',total>0?Math.round(rf/total*100)+'%':'—');
-  set('ct-rv',fmtBRL(rv));set('ct-rv-pct',total>0?Math.round(rv/total*100)+'%':'—');
-  const meta=1500000,pct=Math.min(100,Math.round(total/meta*100));
-  set('ct-fire-atual',fmtBRL(total));set('ct-fire-pct',pct+'% completo');
-  set('ct-fire-anos',total>0?(Math.log(meta/total)/Math.log(1+0.25/12)/12).toFixed(1)+' anos':'—');
-  const b=document.getElementById('ct-fire-bar');if(b)b.style.width=pct+'%';
-  if(total>0){const dp=document.getElementById('d-patrimonio');if(dp)dp.textContent=fmtBRL(total);PATRIMONIO_REAL=total;}
-}
-
-async function renderContas(){
-  if(!CONTAS.length) await carregarContasSalvas();
-  const lista=document.getElementById('contas-lista');if(!lista)return;
-  if(!CONTAS.length){lista.innerHTML='<div class="empty-state">Clique + Adicionar para começar.</div>';return;}
-  const ICONS={banco_br:'🏦',corretora_br:'📈',corretora_eua:'🌎',cex:'₿',wallet:'🦊',previdencia:'🛡️',tesouro:'🏛️',imovel:'🏠',outro:'💼'};
-  const COLS={banco_br:'var(--accent2)',corretora_br:'var(--purple)',corretora_eua:'var(--green)',cex:'var(--accent3)',wallet:'var(--accent)',previdencia:'#e879f9',tesouro:'var(--green)',imovel:'#fb923c',outro:'var(--t2)'};
-  const NOMES={banco_br:'Bancos BR',corretora_br:'Corretoras BR',corretora_eua:'Corretoras EUA',cex:'CEX Cripto',wallet:'Wallets',previdencia:'Previdência/FGTS',tesouro:'Tesouro Direto',imovel:'Imóveis',outro:'Outros'};
-  const grupos={banco_br:[],corretora_br:[],corretora_eua:[],cex:[],wallet:[],previdencia:[],tesouro:[],imovel:[],outro:[]};
-  CONTAS.forEach(c=>(grupos[c.tipo]||grupos.outro).push(c));
-  let html='';
-  for(const[tipo,contas] of Object.entries(grupos)){
-    if(!contas.length)continue;
-    const tot=contas.reduce((s,c)=>s+(c.saldo_brl||0),0);
-    html+=`<div style="margin-bottom:16px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;">${ICONS[tipo]||'💼'} ${NOMES[tipo]||tipo}</span><span style="font-size:12px;font-weight:700;font-family:var(--fm);color:${COLS[tipo]||'var(--t2)'};">${fmtBRL(tot)}</span></div>`;
-    contas.forEach(c=>{
-      const ago=c.ultima_atualizacao?tempoAtras(c.ultima_atualizacao):'—';
-      const badge=c.conexao==='api'?'<span class="badge b-green">API</span>':'<span style="font-size:10px;color:var(--t3);">Manual</span>';
-      html+=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;"><div style="width:34px;height:34px;border-radius:8px;background:${COLS[c.tipo]||'var(--bg4)'}18;display:flex;align-items:center;justify-content:center;font-size:15px;">${ICONS[c.tipo]||'💼'}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;">${c.nome}</div><div style="font-size:10px;color:var(--t3);font-family:var(--fm);">${(c.classe||'').replace('_',' ')} · ${ago}</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;font-family:var(--fm);">${fmtBRL(c.saldo_brl||0)}</div><div style="margin-top:3px;">${badge}</div></div><div style="display:flex;flex-direction:column;gap:3px;"><button onclick="editarSaldo('${c.id}')" class="btn btn-sm" style="padding:3px 7px;font-size:10px;">✏️</button><button onclick="removerConta('${c.id}')" class="btn btn-sm btn-danger" style="padding:3px 7px;font-size:10px;">×</button></div></div>`;
-    });
-    html+='</div>';
-  }
-  lista.innerHTML=html;
-  atualizarDashboardContas();
-  desenharGraficoContas();
-}
-
-function desenharGraficoContas(){
-  const canvas=document.getElementById('ct-chart');if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  canvas.width=canvas.offsetWidth||300;canvas.height=180;
-  const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);
-  const dist={cripto:0,renda_fixa:0,renda_var:0,internacional:0,previdencia:0,imovel:0,outro:0};
-  CONTAS.forEach(c=>dist[c.classe]=(dist[c.classe]||0)+(c.saldo_brl||0));
-  const total=Object.values(dist).reduce((a,b)=>a+b,0);
-  if(!total){ctx.fillStyle='var(--t3)';ctx.font='11px DM Sans';ctx.textAlign='center';ctx.fillText('Adicione contas',W/2,H/2);return;}
-  const CORES={cripto:'#f59e0b',renda_fixa:'#3b9eff',renda_var:'#8b5cf6',internacional:'#10b981',previdencia:'#e879f9',imovel:'#fb923c',outro:'#64748b'};
-  const LABELS={cripto:'Cripto',renda_fixa:'Renda Fixa/Bancos',renda_var:'Renda Variável',internacional:'Internacional',previdencia:'Previdência',imovel:'Imóvel',outro:'Outros'};
-  const fatias=Object.entries(dist).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  let ang=-Math.PI/2;const cx=W/2,cy=H/2-10,r=65;
-  fatias.forEach(([tipo,val])=>{const sw=(val/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,ang,ang+sw);ctx.closePath();ctx.fillStyle=CORES[tipo]||'#888';ctx.fill();ang+=sw;});
-  ctx.beginPath();ctx.arc(cx,cy,38,0,Math.PI*2);ctx.fillStyle='#0f1117';ctx.fill();
-  ctx.fillStyle='#8890a8';ctx.font='10px DM Sans';ctx.textAlign='center';ctx.fillText('Total',cx,cy-3);
-  ctx.fillStyle='#dde1ec';ctx.font='bold 12px DM Sans';ctx.fillText(fmtBRL(total),cx,cy+13);
-  const leg=document.getElementById('ct-legenda');
-  if(leg)leg.innerHTML=fatias.map(([t,v])=>`<div style="display:flex;align-items:center;gap:7px;"><div style="width:9px;height:9px;border-radius:2px;background:${CORES[t]};flex-shrink:0;"></div><span style="flex:1;font-size:11px;color:var(--t2);">${LABELS[t]||t}</span><span style="font-size:11px;font-weight:700;font-family:var(--fm);">${fmtBRL(v)}</span><span style="font-size:10px;color:var(--t3);">${Math.round(v/total*100)}%</span></div>`).join('');
-}
-
-async function carregarEMostrarPortfolio(){
-  await carregarContasSalvas();
-  await carregarPortfolioBinance();
-  renderPortfolio();
-  atualizarDashboardContas();
-}
-
 async function carregarTudo(){
   await verificarAPI();
   await carregarHodlLocks();
+  await carregarContasSalvas();
   const ok=await carregarPortfolioBinance();
   if(!ok){
     ATIVOS=[
