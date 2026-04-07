@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 router = APIRouter(prefix="/api/v1/mercado", tags=["mercado"])
 logger = logging.getLogger(__name__)
