@@ -417,6 +417,35 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <!-- ═══════════════════ ROBÔS & GA ═══════════════════ -->
 <div id="page-robos" class="page">
+
+  <!-- FEED DE PROPOSTAS -->
+  <div class="grid2" style="margin-bottom:14px;">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div class="sec" style="margin:0;">Feed de Oportunidades</div>
+          <div class="sec-sub" id="propostas-ultima-analise">A carregar...</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="dispararAnalise()" id="btn-analisar-robos">🔍 Analisar agora</button>
+      </div>
+      <div id="propostas-feed"></div>
+    </div>
+
+    <div>
+      <!-- SCORES DOS ROBÔS -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="sec">Performance dos Robôs</div>
+        <div class="sec-sub">Taxa de acerto baseada no teu feedback</div>
+        <div id="robos-scores" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;"></div>
+      </div>
+
+      <!-- GA CARD -->
+      </div><!-- /card scores -->
+    </div><!-- /coluna direita -->
+  <!-- GA SECTION -->
+  <div class="card">
+    <div class="sec">Algoritmo Genético</div>
+    <div class="sec-sub">7 genes · Sortino fitness · Black swans</div>
   <div class="grid4">
     <div class="mc teal"><div class="mc-l">Robôs ativos</div><div class="mc-v" id="r-ativos">—</div></div>
     <div class="mc green"><div class="mc-l">Melhor Sortino</div><div class="mc-v up" id="r-sortino">—</div></div>
@@ -497,6 +526,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     </table>
   </div>
 </div>
+
+</div><!-- /page-robos -->
 
 <!-- ═══════════════════ ANÁLISE TÉCNICA ═══════════════════ -->
 <div id="page-tecnico" class="page">
@@ -1077,7 +1108,7 @@ const pageTitles={
   dashboard:  ['Dashboard','Visão geral · portfólio · mercado ao vivo'],
   portfolio:  ['Portfólio','Ativos · VaR/CVaR · distribuição'],
   fire:       ['FIRE Tracker','Monte Carlo 10k · Regra dos 4% · cenários'],
-  robos:      ['Robôs & GA','7 genes · 5 estratégias · algoritmo genético'],
+  robos:      ['Robôs & GA','Propostas automáticas · Feed de oportunidades · Retroalimentação'],
   tecnico:    ['Análise Técnica','Qualquer ativo · Dados reais · IA integrada'],
   ia:         ['IA Advisor','Claude API · Kelly · stress test · alertas'],
   contas:     ['Contas & Patrimônio','Bancos · CEX · Wallets · Corretoras · Previdência · tudo consolidado'],
@@ -1093,7 +1124,7 @@ function showPage(id,el){
   const[t,s]=pageTitles[id]||['',''];
   document.getElementById('top-title').textContent=t;
   document.getElementById('top-sub').textContent=s;
-  if(id==='robos'&&robots.length===0) initRobots();
+  if(id==='robos'){if(robots.length===0)initRobots();carregarPropostas();}
   if(id==='portfolio') carregarEMostrarPortfolio();
   if(id==='ia') carregarIA();
   if(id==='contas') renderContas();
@@ -2303,6 +2334,194 @@ function desenharEvolucao(){
   ctx.fillText(fmtBRL(minV),2,H-2);
   ctx.textAlign='right';
   ctx.fillText(fmtBRL(maxV),W-2,14);
+}
+
+
+// ── PROPOSTAS DOS ROBÔS ───────────────────────────────────────────────────
+
+let _propostas = [];
+let _scoresRobos = {};
+
+async function carregarPropostas(){
+  const res = await apiFetch('/propostas/');
+  if(!res) return;
+  _propostas = res.propostas || [];
+  _scoresRobos = res.scores_robos || {};
+  renderPropostas();
+  renderScoresRobos();
+  if(res.ultima_analise){
+    const el=document.getElementById('propostas-ultima-analise');
+    if(el) el.textContent='Última análise: '+new Date(res.ultima_analise).toLocaleString('pt-BR');
+  }
+}
+
+async function dispararAnalise(){
+  const btn=document.getElementById('btn-analisar-robos');
+  if(btn){btn.innerHTML='<span class="loading-spinner"></span> Analisando...';btn.disabled=true;}
+  const patrimonio = PATRIMONIO_REAL || 2597;
+  const res = await apiFetch('/propostas/analisar?patrimonio='+patrimonio,'POST');
+  if(res){
+    toast('✓ '+res.novas_propostas+' novas propostas geradas ('+res.analisados+' ativos analisados)');
+    await carregarPropostas();
+  } else {
+    toast('Erro na análise','error');
+  }
+  if(btn){btn.innerHTML='🔍 Analisar agora';btn.disabled=false;}
+}
+
+async function decidirProposta(id, decisao){
+  const proposta = _propostas.find(p=>p.id===id);
+  if(!proposta) return;
+
+  let preco_execucao = null;
+  let notas = '';
+
+  if(decisao === 'executei'){
+    const precoStr = prompt('Preco de execucao? ('+proposta.ticker+')', proposta.preco_atual.toFixed(4));
+    if(precoStr === null) return;
+    preco_execucao = parseFloat(precoStr.replace(',','.'));
+    if(isNaN(preco_execucao)){toast('Preço inválido','error');return;}
+    notas = prompt('Notas (opcional):', '') || '';
+  } else {
+    notas = prompt('Motivo da rejeição (opcional):', '') || '';
+  }
+
+  const res = await apiFetch('/propostas/feedback','POST',{
+    proposta_id: id,
+    decisao,
+    preco_execucao,
+    notas
+  });
+
+  if(res?.ok){
+    toast(decisao==='executei'?'✓ Proposta registada como executada!':'Proposta rejeitada e arquivada');
+    await carregarPropostas();
+  }
+}
+
+function renderPropostas(){
+  const container = document.getElementById('propostas-feed');
+  if(!container) return;
+
+  if(!_propostas.length){
+    container.innerHTML=`<div class="empty-state" style="padding:3rem;">
+      <div style="font-size:2rem;margin-bottom:12px;">🤖</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:8px;">Nenhuma proposta pendente</div>
+      <div style="font-size:12px;color:var(--t3);">Clique em "Analisar agora" para gerar oportunidades</div>
+    </div>`;
+    return;
+  }
+
+  const TIPO_LABEL={cripto:'₿',acao_br:'🇧🇷',acao_eua:'🇺🇸',etf_br:'📊',etf_eua:'📊',fii:'🏢',bdr:'🌎'};
+
+  container.innerHTML = _propostas.map(p=>{
+    const corSinal = p.sinal==='compra'?'var(--green)':'var(--red)';
+    const bgSinal = p.sinal==='compra'?'rgba(16,185,129,.08)':'rgba(239,68,68,.08)';
+    const borderSinal = p.sinal==='compra'?'rgba(16,185,129,.2)':'rgba(239,68,68,.2)';
+    const v24cor = p.variacao_24h>=0?'var(--green)':'var(--red)';
+    const forcaPct = Math.round(p.forca*100);
+
+    return`<div style="background:var(--bg3);border:1px solid ${borderSinal};border-radius:12px;padding:16px;margin-bottom:12px;">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="background:${bgSinal};border-radius:8px;padding:6px 12px;font-size:16px;font-weight:800;font-family:var(--fm);color:${corSinal};">${p.acao}</div>
+          <div>
+            <div style="font-family:var(--fh);font-size:15px;font-weight:700;">${TIPO_LABEL[p.tipo]||'📈'} ${p.ticker}</div>
+            <div style="font-size:10px;color:var(--t3);">${p.nome_completo}</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--fm);font-size:16px;font-weight:700;">${p.preco_atual.toFixed(p.preco_atual>100?2:4)}</div>
+          <div style="font-size:11px;color:${v24cor};font-family:var(--fm);">${p.variacao_24h>=0?'+':''}${p.variacao_24h.toFixed(2)}% 24h</div>
+        </div>
+      </div>
+
+      <!-- Robô + força -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span style="font-size:11px;color:var(--t3);">🤖 ${p.robo_nome}</span>
+        <div style="flex:1;height:4px;background:var(--bg4);border-radius:2px;">
+          <div style="width:${forcaPct}%;height:100%;background:${corSinal};border-radius:2px;"></div>
+        </div>
+        <span style="font-size:11px;color:var(--t2);font-family:var(--fm);">Força ${forcaPct}%</span>
+      </div>
+
+      <!-- Métricas -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
+        <div style="background:var(--bg4);border-radius:7px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);margin-bottom:3px;">ENTRADA</div>
+          <div style="font-size:12px;font-weight:700;font-family:var(--fm);color:var(--accent)">${p.entrada_sugerida.toFixed(p.entrada_sugerida>100?2:4)}</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:7px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);margin-bottom:3px;">STOP</div>
+          <div style="font-size:12px;font-weight:700;font-family:var(--fm);color:var(--red)">${p.stop_loss.toFixed(p.stop_loss>100?2:4)}</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:7px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);margin-bottom:3px;">ALVO</div>
+          <div style="font-size:12px;font-weight:700;font-family:var(--fm);color:var(--green)">${p.alvo.toFixed(p.alvo>100?2:4)}</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:7px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);margin-bottom:3px;">VALOR</div>
+          <div style="font-size:12px;font-weight:700;font-family:var(--fm);">${fmtBRL(p.valor_sugerido)}</div>
+        </div>
+      </div>
+
+      <!-- Risco/Retorno -->
+      <div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px;">
+        <span style="color:var(--red);">⬇ Risco: ${p.risco_pct}%</span>
+        <span style="color:var(--green);">⬆ Potencial: +${p.retorno_potencial}%</span>
+        <span style="color:var(--t3);">Kelly: ${p.kelly_pct}% do portfólio</span>
+      </div>
+
+      <!-- Justificativa -->
+      <div style="font-size:11px;color:var(--t2);background:var(--bg4);border-radius:6px;padding:8px;margin-bottom:12px;">
+        💡 ${p.justificativa}
+      </div>
+
+      <!-- Botões de decisão -->
+      <div style="display:flex;gap:8px;">
+        <button onclick="decidirProposta('${p.id}','executei')"
+          style="flex:2;padding:9px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:var(--green);border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;">
+          ✓ Executei esta ordem
+        </button>
+        <button onclick="decidirProposta('${p.id}','rejeitei')"
+          style="flex:1;padding:9px;background:var(--bg4);border:1px solid var(--border);color:var(--t2);border-radius:8px;cursor:pointer;font-size:12px;">
+          ✗ Rejeitar
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderScoresRobos(){
+  const container = document.getElementById('robos-scores');
+  if(!container) return;
+
+  const ROBOS_INFO = {
+    alpha: {nome:'Alpha-RSI', emoji:'🔴', estrategia:'Momentum'},
+    beta:  {nome:'Beta-Bollinger', emoji:'🔵', estrategia:'Mean Reversion'},
+    gamma: {nome:'Gamma-Trend', emoji:'🟢', estrategia:'Trend Following'},
+  };
+
+  container.innerHTML = Object.entries(ROBOS_INFO).map(([id, info])=>{
+    const score = _scoresRobos[id] || {acertos:0,erros:0,total:0,taxa_acerto:0.5};
+    const taxa = Math.round(score.taxa_acerto * 100);
+    const cor = taxa >= 60 ? 'var(--green)' : taxa >= 40 ? 'var(--accent3)' : 'var(--red)';
+    return`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:22px;">${info.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;">${info.nome}</div>
+        <div style="font-size:10px;color:var(--t3);">${info.estrategia} · ${score.total} propostas</div>
+        <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;">
+          <div style="width:${taxa}%;height:100%;background:${cor};border-radius:2px;"></div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:18px;font-weight:800;font-family:var(--fm);color:${cor};">${taxa}%</div>
+        <div style="font-size:10px;color:var(--t3);">${score.acertos}✓ ${score.erros}✗</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function carregarTudo(){
