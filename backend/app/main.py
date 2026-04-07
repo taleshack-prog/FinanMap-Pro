@@ -10,6 +10,9 @@ from app.routers import fire, portfolio, ai_advisor, market, onboarding
 from app.routers import auth, robos, tecnico
 from app.core.config import settings
 
+import os
+os.environ.setdefault('WATCHFILES_IGNORE_PATHS', '.venv')
+
 app = FastAPI(
     title="FinanMap Pro API v3",
     description="GA 7 genes · RSI/MACD/BB · VaR/CVaR · Robôs com 2FA · Monte Carlo 10k",
@@ -55,3 +58,39 @@ from app.routers import wallets
 from app.routers import propostas
 app.include_router(wallets.router)
 app.include_router(propostas.router)
+
+# ── Agendador automático ──────────────────────────────────────────────────────
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+
+scheduler = AsyncIOScheduler()
+
+async def analise_automatica_job():
+    """Roda análise dos robôs a cada hora automaticamente."""
+    try:
+        from app.routers.propostas import rodar_analise_automatica
+        from app.routers.state import carregar_state
+        # Buscar patrimônio actual do state
+        state = carregar_state()
+        contas = state.get("contas", [])
+        patrimonio = sum(c.get("saldo_brl", 0) for c in contas) or 2597.0
+        resultado = await rodar_analise_automatica(patrimonio)
+        print(f"[Scheduler] Análise automática: {resultado['novas_propostas']} novas propostas, {resultado['analisados']} ativos")
+    except Exception as e:
+        print(f"[Scheduler] Erro: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    scheduler.add_job(
+        analise_automatica_job,
+        trigger=IntervalTrigger(hours=1),
+        id="analise_robos",
+        replace_existing=True,
+        next_run_time=__import__("datetime").datetime.now()  # rodar imediatamente ao iniciar
+    )
+    scheduler.start()
+    print("[Scheduler] Análise automática iniciada — intervalo: 1 hora")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    scheduler.shutdown()
