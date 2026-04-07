@@ -51,3 +51,5 @@ app.include_router(state.router)
 
 from app.routers import mercado
 app.include_router(mercado.router)
+from app.routers import wallets
+app.include_router(wallets.router)
