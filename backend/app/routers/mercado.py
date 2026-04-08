@@ -289,6 +289,14 @@ INDICADORES TÉCNICOS:
 - Regime: {regime}
 - Tendência: {tendencia}
 
+ANÁLISE DE FLUXO (dados reais Binance):
+- CVD: {analise_tecnica.get('cvd', 'N/A')} ({analise_tecnica.get('fluxo', {}).get('cvd_sinal', 'N/A')})
+- OFI: {analise_tecnica.get('ofi', 'N/A')} ({analise_tecnica.get('fluxo', {}).get('ofi_sinal', 'N/A')})
+- Book Imbalance: {analise_tecnica.get('book_imbalance', 'N/A')} (>0=mais bids, <0=mais asks)
+- VWAP 24h: {analise_tecnica.get('vwap_24h', 'N/A')}
+- Funding Rate: {analise_tecnica.get('funding_rate', 'N/A')}% ({analise_tecnica.get('fluxo', {}).get('funding_sinal', 'N/A')})
+- Volume Buy/Sell: {analise_tecnica.get('fluxo', {}).get('volume_buy_pct', 'N/A')}% buy / {analise_tecnica.get('fluxo', {}).get('volume_sell_pct', 'N/A')}% sell
+
 Responda com exactamente estas 5 secções (seja conciso, máx 3 linhas cada):
 
 🎯 VEREDICTO: [COMPRA FORTE / COMPRA / NEUTRO / VENDA / VENDA FORTE] - justificativa em 1-2 frases
@@ -320,6 +328,107 @@ class AnaliseMercadoInput(BaseModel):
     periodo: Optional[str] = '3mo'  # 1mo, 3mo, 6mo, 1y
     com_ia: Optional[bool] = True
 
+
+
+async def buscar_dados_fluxo_binance(symbol: str) -> dict:
+    """Busca dados reais de fluxo da Binance: CVD, OFI, VWAP, Funding."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+
+            # 1. Trades recentes para CVD real (últimos 500)
+            url_trades = f"https://api.binance.com/api/v3/trades?symbol={symbol}&limit=500"
+            async with session.get(url_trades) as r:
+                trades = await r.json() if r.status == 200 else []
+
+            # Calcular CVD real
+            cvd = 0.0
+            volumes_buy = 0.0
+            volumes_sell = 0.0
+            for t in trades:
+                qty = float(t.get('qty', 0))
+                is_buyer_maker = t.get('isBuyerMaker', False)
+                if is_buyer_maker:
+                    volumes_sell += qty
+                    cvd -= qty
+                else:
+                    volumes_buy += qty
+                    cvd += qty
+
+            total_vol = volumes_buy + volumes_sell
+            ofi = round((volumes_buy - volumes_sell) / total_vol, 4) if total_vol > 0 else 0
+
+            # 2. Order book para profundidade real
+            url_depth = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=20"
+            async with session.get(url_depth) as r:
+                depth = await r.json() if r.status == 200 else {}
+
+            bids = depth.get('bids', [])
+            asks = depth.get('asks', [])
+            bid_vol = sum(float(b[1]) for b in bids[:10])
+            ask_vol = sum(float(a[1]) for a in asks[:10])
+            book_imbalance = round((bid_vol - ask_vol) / (bid_vol + ask_vol), 4) if (bid_vol + ask_vol) > 0 else 0
+            best_bid = float(bids[0][0]) if bids else 0
+            best_ask = float(asks[0][0]) if asks else 0
+            spread = round((best_ask - best_bid) / best_bid * 100, 4) if best_bid > 0 else 0
+
+            # 3. Funding rate (perpetual futures)
+            funding_rate = 0.0
+            next_funding = None
+            try:
+                url_funding = f"https://fapi.binance.com/fapi/v1/premiumIndex?symbol={symbol}"
+                async with session.get(url_funding) as r:
+                    if r.status == 200:
+                        fdata = await r.json()
+                        funding_rate = float(fdata.get('lastFundingRate', 0)) * 100
+                        next_funding = fdata.get('nextFundingTime')
+            except Exception:
+                pass
+
+            # 4. VWAP das últimas 24h via klines
+            url_klines = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1h&limit=24"
+            async with session.get(url_klines) as r:
+                klines_24h = await r.json() if r.status == 200 else []
+
+            vwap = 0.0
+            if klines_24h:
+                total_pv = sum(
+                    ((float(k[2])+float(k[3])+float(k[4]))/3) * float(k[5])
+                    for k in klines_24h
+                )
+                total_v = sum(float(k[5]) for k in klines_24h)
+                vwap = round(total_pv / total_v, 4) if total_v > 0 else 0
+
+            # 5. Open Interest (se disponível)
+            open_interest = 0.0
+            try:
+                url_oi = f"https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}"
+                async with session.get(url_oi) as r:
+                    if r.status == 200:
+                        oi_data = await r.json()
+                        open_interest = float(oi_data.get('openInterest', 0))
+            except Exception:
+                pass
+
+            return {
+                'cvd': round(cvd, 4),
+                'cvd_sinal': 'positivo' if cvd > 0 else 'negativo',
+                'ofi': ofi,
+                'ofi_sinal': 'pressao_compra' if ofi > 0.1 else 'pressao_venda' if ofi < -0.1 else 'neutro',
+                'book_imbalance': book_imbalance,
+                'bid_volume': round(bid_vol, 4),
+                'ask_volume': round(ask_vol, 4),
+                'spread_pct': spread,
+                'vwap_24h': vwap,
+                'funding_rate_pct': round(funding_rate, 4),
+                'funding_sinal': 'longs_pagando' if funding_rate > 0.01 else 'shorts_pagando' if funding_rate < -0.01 else 'neutro',
+                'open_interest': round(open_interest, 2),
+                'volume_buy_pct': round(volumes_buy / total_vol * 100, 1) if total_vol > 0 else 50,
+                'volume_sell_pct': round(volumes_sell / total_vol * 100, 1) if total_vol > 0 else 50,
+            }
+    except Exception as e:
+        logger.error(f"Fluxo Binance erro {symbol}: {e}")
+        return {}
 
 @router.post("/analisar")
 async def analisar_ativo_mercado(payload: AnaliseMercadoInput):
@@ -355,6 +464,19 @@ async def analisar_ativo_mercado(payload: AnaliseMercadoInput):
         # Análise técnica
         from app.services.technical_service import analisar_ativo
         tecnica = analisar_ativo(ticker_info['nome'], precos, volumes if volumes else None)
+
+        # Dados de fluxo reais (apenas para cripto Binance)
+        fluxo = {}
+        if ticker_info['tipo'] == 'cripto':
+            fluxo = await buscar_dados_fluxo_binance(ticker_info['ticker_binance'])
+            # Adicionar ao resultado técnico
+            if fluxo:
+                tecnica['fluxo'] = fluxo
+                tecnica['cvd'] = fluxo.get('cvd', 0)
+                tecnica['vwap_24h'] = fluxo.get('vwap_24h', 0)
+                tecnica['funding_rate'] = fluxo.get('funding_rate_pct', 0)
+                tecnica['ofi'] = fluxo.get('ofi', 0)
+                tecnica['book_imbalance'] = fluxo.get('book_imbalance', 0)
 
         # Análise IA
         analise_ia = ""
