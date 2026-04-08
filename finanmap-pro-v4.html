@@ -340,7 +340,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <!-- ═══════════════════ PORTFÓLIO ═══════════════════ -->
 <div id="page-portfolio" class="page">
   <div class="grid4">
-    <div class="mc purple"><div class="mc-l">Total Investido</div><div class="mc-v">R$—</div><div class="mc-s">portfólio consolidado</div></div>
+    <div class="mc purple"><div class="mc-l">Total Investido</div><div class="mc-v" id="pf-total">R$—</div><div class="mc-s">portfólio consolidado</div></div>
     <div class="mc green"><div class="mc-l">Rentab. Total</div><div class="mc-v up">+18,4%</div><div class="mc-s">histórico</div></div>
     <div class="mc amber"><div class="mc-l">Dividendos 12m</div><div class="mc-v" style="color:var(--accent3)">R$8.420</div><div class="mc-s">yield 3,4%</div></div>
     <div class="mc blue"><div class="mc-l">VaR 95% (1d)</div><div class="mc-v" style="color:var(--red)" id="p-var">—</div><div class="mc-s">risco diário</div></div>
@@ -1832,6 +1832,8 @@ function renderPortfolio(){
   }
 
   const patrimonioTotal=todosAtivos.reduce((s,a)=>s+(a.valor||a.qtd*a.preco),0);
+  const kpiPfTotal=document.getElementById('pf-total');
+  if(kpiPfTotal) kpiPfTotal.textContent=fmtBRL(patrimonioTotal);
 
   tbody.innerHTML=todosAtivos.map(a=>{
     const valorBRL=a.valor||(a.qtd*a.preco);
