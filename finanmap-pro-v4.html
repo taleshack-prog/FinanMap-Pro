@@ -401,9 +401,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="sec">Parâmetros FIRE</div>
     <div class="sec-sub">Ajuste e clique em Recalcular Monte Carlo</div>
     <div class="grid3">
-      <div class="field"><label>Patrimônio atual</label><div class="prefix-input"><span>R$</span><input type="number" id="f-patrimonio" value="247000"></div></div>
-      <div class="field"><label>Aporte mensal</label><div class="prefix-input"><span>R$</span><input type="number" id="f-aporte" value="5000"></div></div>
-      <div class="field"><label>Despesas mensais</label><div class="prefix-input"><span>R$</span><input type="number" id="f-despesas" value="5000"></div></div>
+      <div class="field"><label>Patrimônio atual</label><div class="prefix-input"><span>R$</span><input type="number" id="f-patrimonio" value="0"></div></div>
+      <div class="field"><label>Aporte mensal</label><div class="prefix-input"><span>R$</span><input type="number" id="f-aporte" value="0" onchange="salvarParametrosFIRE()"></div></div>
+      <div class="field"><label>Despesas mensais</label><div class="prefix-input"><span>R$</span><input type="number" id="f-despesas" value="0" onchange="salvarParametrosFIRE()"></div></div>
     </div>
     <button class="btn btn-primary" onclick="calcularFire()" id="btn-fire" style="width:100%">🎲 Recalcular Monte Carlo (10k simulações)</button>
   </div>
@@ -1127,6 +1127,7 @@ function showPage(id,el){
   if(id==='robos'){if(robots.length===0)initRobots();carregarPropostas();}
   if(id==='portfolio') carregarEMostrarPortfolio();
   if(id==='ia') carregarIA();
+  if(id==='fire') carregarParametrosFIRE();
   if(id==='contas') renderContas();
 }
 
@@ -1357,9 +1358,9 @@ async function otimizarBackend(){
 async function calcularFire(){
   const btn=document.getElementById('btn-fire');
   btn.innerHTML='<span class="loading-spinner"></span> Calculando 10k simulações...';btn.disabled=true;
-  const patrimonio=parseFloat(document.getElementById('f-patrimonio').value)||247000;
-  const aporte=parseFloat(document.getElementById('f-aporte').value)||5000;
-  const despesas=parseFloat(document.getElementById('f-despesas').value)||5000;
+  const patrimonio=parseFloat(document.getElementById('f-patrimonio').value)||PATRIMONIO_REAL||totalPatrimonioBRL()||0;
+  const aporte=parseFloat(document.getElementById('f-aporte').value)||0;
+  const despesas=parseFloat(document.getElementById('f-despesas').value)||0;
   const res=await apiFetch('/fire/calculate','POST',{patrimonio_atual:patrimonio,aporte_mensal:aporte,despesas_mensais:despesas});
   btn.textContent='🎲 Recalcular Monte Carlo (10k simulações)';btn.disabled=false;
   if(!res){toast('Backend offline — cálculo local','error');return;}
@@ -1383,7 +1384,7 @@ async function calcularFire(){
 
 async function calcularStress(){
   const alloc={renda_fixa:35,renda_var:30,cripto:20,internacional:15};
-  const patrimonio=parseFloat(document.getElementById('f-patrimonio')?.value||'247000')||247000;
+  const patrimonio=parseFloat(document.getElementById('f-patrimonio')?.value||'0')||PATRIMONIO_REAL||0;
   const res=await apiFetch('/tecnico/stress','POST',{alocacao:alloc,patrimonio});
   if(!res)return;
   const CENARIOS=[
@@ -1926,7 +1927,7 @@ async function carregarPortfolioBinance(){
   }
   PATRIMONIO_REAL=total;
   document.getElementById('d-patrimonio').textContent=fmtBRL(total);
-  const fp=document.getElementById('f-patrimonio');if(fp)fp.value=Math.round(total);
+  const fp=document.getElementById('f-patrimonio');if(fp&&PATRIMONIO_REAL>0)fp.value=Math.round(PATRIMONIO_REAL);
   toast('Binance: '+ATIVOS.length+' ativos · '+fmtBRL(total));
   return true;
 }
@@ -2522,6 +2523,29 @@ function renderScoresRobos(){
       </div>
     </div>`;
   }).join('');
+}
+
+
+async function carregarParametrosFIRE(){
+  // Patrimônio real sempre do consolidado
+  const pat = document.getElementById('f-patrimonio');
+  if(pat) pat.value = Math.round(PATRIMONIO_REAL || totalPatrimonioBRL() || 0);
+
+  // Carregar aporte e despesas guardados
+  const res = await apiFetch('/state/fire_params');
+  if(res && res.found && res.value){
+    const p = res.value;
+    const aporte = document.getElementById('f-aporte');
+    const despesas = document.getElementById('f-despesas');
+    if(aporte && p.aporte) aporte.value = p.aporte;
+    if(despesas && p.despesas) despesas.value = p.despesas;
+  }
+}
+
+async function salvarParametrosFIRE(){
+  const aporte = parseFloat(document.getElementById('f-aporte').value) || 0;
+  const despesas = parseFloat(document.getElementById('f-despesas').value) || 0;
+  await apiFetch('/state/', 'POST', {key:'fire_params', value:{aporte, despesas}});
 }
 
 async function carregarTudo(){
