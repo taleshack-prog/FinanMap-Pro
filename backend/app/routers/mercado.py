@@ -297,17 +297,19 @@ ANÁLISE DE FLUXO (dados reais Binance):
 - Funding Rate: {analise_tecnica.get('funding_rate', 'N/A')}% ({analise_tecnica.get('fluxo', {}).get('funding_sinal', 'N/A')})
 - Volume Buy/Sell: {analise_tecnica.get('fluxo', {}).get('volume_buy_pct', 'N/A')}% buy / {analise_tecnica.get('fluxo', {}).get('volume_sell_pct', 'N/A')}% sell
 
-Responda com exactamente estas 5 secções (seja conciso, máx 3 linhas cada):
+Responda com exactamente estas 6 secções (seja conciso, máx 3 linhas cada):
 
-🎯 VEREDICTO: [COMPRA FORTE / COMPRA / NEUTRO / VENDA / VENDA FORTE] - justificativa em 1-2 frases
+🎯 VEREDICTO: [COMPRA FORTE / COMPRA / NEUTRO / VENDA / VENDA FORTE] - justificativa integrando técnica E fluxo
 
-📊 ANÁLISE TÉCNICA: Interprete os indicadores acima de forma clara para um investidor
+📊 ANÁLISE TÉCNICA: Interprete RSI, MACD, Bollinger, Z-Score e Hurst de forma clara
 
-💰 ENTRADA SUGERIDA: Preço ideal de entrada e porquê (baseado em suporte/Bollinger inferior)
+🌊 ANÁLISE DE FLUXO: Interprete o CVD, OFI, Book Imbalance e Funding Rate — o que o dinheiro inteligente está a fazer? Compra ou venda institucional? Pressão dominante?
 
-🛡️ STOP LOSS: Nível de stop loss sugerido e percentagem de risco
+💰 ENTRADA SUGERIDA: Preço ideal de entrada baseado em suporte Bollinger + VWAP 24h
 
-⚡ OPORTUNIDADE: Existe alguma oportunidade específica agora? Catalisadores ou riscos a monitorar?"""
+🛡️ STOP LOSS: Nível de stop loss e percentagem de risco máximo
+
+⚡ OPORTUNIDADE: Existe confluência entre os sinais técnicos E de fluxo? Que catalisador ou risco monitorar?"""
 
         message = client.messages.create(
             model="claude-sonnet-4-20250514",
